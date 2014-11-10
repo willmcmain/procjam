@@ -7,9 +7,11 @@
         <script src="src/utils.js"></script>
         <script src="src/terrain.js"></script>
         <script src="src/player.js"></script>
+        <script src="src/noise.js"></script>
         <script>
             $(window).load(function() {
                 Game.start();
+                Map.draw();
             });
         </script>
     </head>
@@ -19,5 +21,6 @@
         <dt>dbg</dt>
         <dd id='x-spd'></dd>
     </dl>
+    <canvas id='map'>
     </body>
 </html>
