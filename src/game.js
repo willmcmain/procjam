@@ -6,5 +6,6 @@ Game = {
         Crafty.init(800, 600);
         Crafty.background('black');
         Terrain.init();
+        Player.init();
     }
 };

@@ -20,6 +20,9 @@ Crafty.c('Tile', {
         this.tile = Terrain.tiles[index];
         this.color(this.tile.color);
         this.attr({ x: x * Game.TILE_WIDTH, y:  y * Game.TILE_HEIGHT });
+        if(this.tile.solid) {
+            this.requires('Solid');
+        }
     }
 });
 
@@ -32,6 +35,7 @@ Terrain.tiles = {
     1: {
         name: 'water',
         color: '#00F',
+        solid: true,
     },
     2: {
         name: 'rock',
