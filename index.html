@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="lib/jquery.js"></script>
+        <script src="lib/crafty.js"></script>
+        <script src="src/game.js"></script>
+        <script src="src/utils.js"></script>
+        <script src="src/terrain.js"></script>
+        <script>
+            $(window).load(function() {
+                Game.start();
+            });
+        </script>
+    </head>
+    <body>
+    <div id='cr-stage'></div>
+    <dl>
+        <dt>dbg</dt>
+        <dd id='x-spd'></dd>
+    </dl>
+    </body>
+</html>
