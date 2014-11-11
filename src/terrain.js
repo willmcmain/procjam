@@ -24,6 +24,9 @@ Crafty.c('Tile', {
             if(this.x > xmax || this.x < xmin
                 || this.y > ymax || this.y < ymin) {
                 this.destroy();
+                var i = Math.floor(this.x / Game.TILE_WIDTH);
+                var j = Math.floor(this.y / Game.TILE_HEIGHT);
+                Terrain.map_loaded[i][j] = false;
             }
         });
     },
@@ -34,6 +37,7 @@ Crafty.c('Tile', {
         if(this.tile.solid) {
             this.requires('Solid');
         }
+        Terrain.map_loaded[x][y] = true;
     }
 });
 
@@ -59,13 +63,17 @@ Terrain.tiles = {
 }
 
 Terrain.map = [];
+Terrain.map_loaded = [];
 
 Terrain.gen_map = function() {
     for(var x = 0; x < Game.MAP_WIDTH; x++) {
         this.map[x] = [];
+        this.map_loaded[x] = [];
         for(var y = 0; y < Game.MAP_HEIGHT; y++) {
             this.map[x][y] = 0;
-            if(Noise.simplex(x/30, y/30) > 0.5) {
+            this.map_loaded[x][y] = false;
+            var v = Noise.simplex(x/30, y/30);
+            if(v > 0.5 && v < 0.6) {
                 this.map[x][y] = 2;
             }
             if(Noise.simplex((x+100)/50, (y+300)/50) > 0.4) {
@@ -77,9 +85,22 @@ Terrain.gen_map = function() {
 
 Terrain.init = function() {
     this.gen_map();
-    for(var x = 0; x < this.map.length; x++) {
-        for(var y = 0; y < this.map[x].length; y++) {
-            //Crafty.e('Tile').tile(this.map[x][y], x, y);
+    this.load_visible();
+    Crafty.bind('InvalidateViewport', this.load_visible);
+}
+
+Terrain.load_visible = function() {
+    var xmin = Math.floor((-Crafty.viewport._x) / Game.TILE_WIDTH);
+    var xmax = Math.ceil((-Crafty.viewport._x + Crafty.viewport._width)
+        / Game.TILE_WIDTH);
+    var ymin = Math.floor((-Crafty.viewport._y) / Game.TILE_HEIGHT);
+    var ymax = Math.ceil((-Crafty.viewport._y + Crafty.viewport._height)
+        / Game.TILE_HEIGHT);
+    for(var x = Math.max(xmin,0); x<Math.min(xmax, Terrain.map.length); x++) {
+        for(var y = Math.max(ymin,0); y<Math.min(ymax, Terrain.map[x].length); y++) {
+            if(!Terrain.map_loaded[x][y]) {
+                Crafty.e('Tile').tile(Terrain.map[x][y], x, y);
+            }
         }
     }
 }

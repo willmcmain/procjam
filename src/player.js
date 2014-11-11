@@ -9,6 +9,7 @@ Crafty.c('Player', {
             .attr({
                 x: 500,
                 y: 350,
+                z: 1,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})
             .onHit('Solid', this.stop);
