@@ -107,10 +107,6 @@ var gen_terrain = function(map) {
             if(Noise.simplex((x+100)/77, (y+300)/75) > 0.4) {
                 map[x][y] = 'water';
             }
-            // Roads
-            /*if(Noise.simplex((x+100)/77, (y+300)/75) < -0.9) {
-                map[x][y] = '';
-            }*/
         }
     }
     return map;

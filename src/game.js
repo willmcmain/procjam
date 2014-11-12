@@ -1,20 +1,20 @@
 Game = {
-    TILE_WIDTH:  48,
-    TILE_HEIGHT: 48,
-    PLAYER_WIDTH: 35,
-    PLAYER_HEIGHT: 35,
+    TILE_WIDTH:  64,
+    TILE_HEIGHT: 64,
+    PLAYER_WIDTH: 48,
+    PLAYER_HEIGHT: 55,
     MAP_WIDTH: 300,
     MAP_HEIGHT: 300,
     SEED: 1928,
 
     start: function() {
-        Crafty.init(48 * 20, 48 * 15);
-        Crafty.background('black');
-        Crafty.viewport.clampToEntities = false;
-        ///Noise.seed(this.SEED);
-        Player.init();
-        Terrain.init();
-    }
+        Crafty.init(64 * 20, 64 * 15);
+        Crafty.scene('Loading');
+    },
+
+    assets: {
+        'player': 'assets/player.png',
+    },
 };
 
 
