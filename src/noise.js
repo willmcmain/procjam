@@ -30,6 +30,23 @@ var dot = function(g, x, y) {
     return g[0] * x + g[1] * y;
 }
 
+Noise.seed = function(x) {
+    seed = x;
+}
+
+var seed = 15485863;
+Noise.randint = function() {
+    var a = 1103515245,
+        c = 12345,
+        m = Math.pow(2, 32);
+    return seed = (a * seed + c) % m;
+}
+
+Noise.uniformint = function(a, b) {
+    var val = this.randint() % (b-a+1);
+    return val + a
+}
+
 Noise.simplex = function (x, y) {
     var n0, n1, n2;
 
