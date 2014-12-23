@@ -1,6 +1,6 @@
 Game = {
-    TILE_WIDTH:  64,
-    TILE_HEIGHT: 64,
+    TILE_WIDTH:  48,
+    TILE_HEIGHT: 48,
     PLAYER_WIDTH: 48,
     PLAYER_HEIGHT: 55,
     MAP_WIDTH: 300,
@@ -8,12 +8,14 @@ Game = {
     SEED: 1928,
 
     start: function() {
-        Crafty.init(64 * 20, 64 * 15);
+        Crafty.init(1024, 768);
         Crafty.scene('Loading');
     },
 
     assets: {
         'player': 'assets/player.png',
+        'enemies': 'assets/enemies.png',
+        'spear': 'assets/spear.png',
     },
 };
 

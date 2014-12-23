@@ -2,6 +2,7 @@ var Player = {};
 (function () {
 
 Crafty.c('Player', {
+    spear: null,
     init: function() {
         this.requires('2D, Canvas, Fourway, Collision, SpriteAnimation')
             .requires('spr_player')
@@ -9,7 +10,7 @@ Crafty.c('Player', {
             .attr({
                 x: 500,
                 y: 350,
-                z: 1,
+                z: 10,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})
             .onHit('Solid', this.stop)
@@ -36,6 +37,18 @@ Crafty.c('Player', {
                 this.pauseAnimation();
             }
         });
+
+        this.bind('Moved', function() {
+            if(this.spear) {
+                this.spear.set_pos();
+            }
+        });
+
+        this.bind('KeyDown', function(data) {
+            if(data.key === Crafty.keys.ENTER) {
+                this.attack();
+            }
+        });
     },
 
     stop: function() {
@@ -45,11 +58,33 @@ Crafty.c('Player', {
             this.y -= this._movement.y;
         }
     },
+
+    attack: function() {
+        if(this.spear === null) {
+            this.spear = Crafty.e('Spear').spear(this);
+        }
+    },
+});
+
+Crafty.c('Spear', {
+    frames: 60,
+    init: function() {
+        this.requires('2D, Canvas, spr_spear');
+        this.attr({z:9});
+    },
+    spear: function(player) {
+        this.player = player;
+        this.set_pos();
+        return this;
+    },
+    set_pos: function() {
+        this.attr({x:this.player.x, y:this.player.y+25});
+    },
 });
 
 Player.init = function () {
-    var player = Crafty.e('Player');
-    Crafty.viewport.follow(player);
+    this.player = Crafty.e('Player');
+    Crafty.viewport.follow(this.player);
 }
 
 })();
