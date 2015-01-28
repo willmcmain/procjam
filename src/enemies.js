@@ -1,6 +1,7 @@
 Crafty.c('Enemy', {
     init: function() {
         this.requires('2D, Canvas, Solid');
+        this.attr({z: 10});
     },
 });
 

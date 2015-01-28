@@ -16,6 +16,7 @@ Game = {
         'player': 'assets/player.png',
         'enemies': 'assets/enemies.png',
         'spear': 'assets/spear.png',
+        'arrow': 'assets/arrow.png',
     },
 };
 

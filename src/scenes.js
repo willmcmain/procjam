@@ -8,6 +8,7 @@ Crafty.scene('Game', function () {
     Crafty.e('Gobbo').spawn(150, 150);
 });
 
+
 Crafty.scene('Loading', function () {
     var assets = [];
     for(var k in Game.assets) {
@@ -21,8 +22,8 @@ Crafty.scene('Loading', function () {
             spr_skelly: [0, 0],
             spr_gobbo:  [3, 0],
         });
-        Crafty.sprite(64, 32, Game.assets['spear'], {
-            spr_spear: [0, 0],
+        Crafty.sprite(32, 32, Game.assets['arrow'], {
+            spr_arrow: [0, 0],
         });
         Crafty.scene('Game');
     });
