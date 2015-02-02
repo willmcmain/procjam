@@ -9,15 +9,35 @@ Game = {
 
     start: function() {
         Crafty.init(1024, 768);
-        Crafty.scene('Loading');
+        Crafty.enterScene('Loading');
     },
 
     assets: {
-        'player': 'assets/player.png',
-        'enemies': 'assets/enemies.png',
-        'spear': 'assets/spear.png',
-        'arrow': 'assets/arrow.png',
-    },
+        "sprites": {
+            "assets/player.png": {
+                "tile": 64,
+                "tileh": 72,
+                "map": {
+                    "spr_player": [0, 2],
+                },
+            },
+            "assets/enemies.png": {
+                "tile": 32,
+                "tileh": 36,
+                "map": {
+                    "spr_skelly": [0, 0],
+                    "spr_gobbo": [3, 0],
+                },
+            },
+            "assets/arrow.png": {
+                "tile": 32,
+                "tileh": 32,
+                "map": {
+                    "spr_arrow": [0, 0],
+                },
+            },
+        },
+    }
 };
 
 

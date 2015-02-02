@@ -43,24 +43,24 @@ Crafty.c('Tile', {
 Terrain.tiles = {
     'grass': {
         name: 'grass',
-        color: '#0F0',
+        color: '#00FF00',
         rawcolor: [0, 255, 0],
     },
     'water': {
         name: 'water',
-        color: '#00F',
+        color: '#0000FF',
         //solid: true,
         rawcolor: [0, 0, 255],
     },
     'rock': {
         name: 'rock',
-        color: '#888',
+        color: '#88888',
         //solid: true,
         rawcolor: [136, 136, 136],
     },
     'tree': {
         name: 'tree',
-        color: '#0A0',
+        color: '#00AA00',
         solid: true,
         rawcolor: [0, 160, 0],
     },
@@ -73,7 +73,7 @@ Terrain.tiles = {
     },
     'stairs': {
         name: 'stairs',
-        color: '#000',
+        color: '#000000',
         rawcolor: [0,0,0],
     },
 }
