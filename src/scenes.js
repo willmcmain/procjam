@@ -10,6 +10,8 @@ Crafty.scene('Game', function () {
 
 
 Crafty.scene('Loading', function () {
+    Crafty.background('black');
+
     Crafty.load(Game.assets,
         function () { // onLoad
             Crafty.enterScene('Game');

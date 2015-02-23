@@ -33,7 +33,7 @@ Crafty.c('Tile', {
         this.color(this.tile.color);
         this.attr({ x: x * Game.TILE_WIDTH, y:  y * Game.TILE_HEIGHT });
         if(this.tile.solid) {
-            this.requires('Solid');
+            this.requires('Collision, Solid');
         }
         Terrain.map_loaded[x][y] = true;
     },
@@ -43,7 +43,7 @@ Crafty.c('Tile', {
 Terrain.tiles = {
     'grass': {
         name: 'grass',
-        color: '#00FF00',
+        color: '#008800',
         rawcolor: [0, 255, 0],
     },
     'water': {
@@ -60,7 +60,7 @@ Terrain.tiles = {
     },
     'tree': {
         name: 'tree',
-        color: '#00AA00',
+        color: '#005500',
         solid: true,
         rawcolor: [0, 160, 0],
     },
