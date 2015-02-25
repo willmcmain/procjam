@@ -1,14 +1,19 @@
 Crafty.c('Health', {
     _health: 1,
+    _ondmg: function() {},
     health: function(h) {
         this._health = h;
     },
     damage: function(d) {
         this._health -= d;
+        this._ondmg();
         if(this._health <= 0) {
             this.destroy();
         }
     },
+    on_dmg: function(f) {
+        this._ondmg = f;
+    }
 });
 
 

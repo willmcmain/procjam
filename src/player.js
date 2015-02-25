@@ -48,15 +48,19 @@ Crafty.c('Player', {
 
         this.onHit('Enemy', function() {
             this.stop();
-            if(this._timers.iframes == 0) {
-                this.damage(10);
-                this._timers.iframes = 50;
-                console.log("HP: " + this._health);
-            }
-            else {
-                this.visible = true;
-            }
+            this.damage(10);
         });
+
+        this.damage = function(d) {
+            if(this._timers.iframes == 0) {
+                this._health -= d;
+                console.log("HP: " + this._health);
+                if(this._health <= 0) {
+                    this.destroy();
+                }
+                this._timers.iframes = 50;
+            }
+        };
 
         this.bind('NewDirection', function(data) {
             if (data.x > 0) {
@@ -113,8 +117,10 @@ Crafty.c('Player', {
 
     attack: function() {
         if(this._timers.attack == 0) {
-            Crafty.e('Arrow').arrow(this.x, this.y, this.dir);
-            this._timers.attack = 30;
+            Crafty.e('Arrow')
+                .arrow(this.x, this.y, this.dir)
+                .owner(this);
+            this._timers.attack = 10;
         }
     },
 });
@@ -122,6 +128,8 @@ Crafty.c('Player', {
 
 Crafty.c('Arrow', {
     speed: 6.6,
+    _damage: 10,
+    _owner: null,
     init: function() {
         this.requires('Entity, Collision, Despawn, SpriteAnimation')
             .requires('spr_arrow')
@@ -173,14 +181,36 @@ Crafty.c('Arrow', {
             }
         });
         this.onHit('Enemy', function(objs) {
-            var dmg = 10;
+            that = this;
             $(objs).each(function() {
-                this.obj.damage(dmg);
+                this.obj.damage(that._damage);
             });
             this.destroy();
         });
-    },
+        this.onHit('Player', function(objs) {
+            that = this;
+            $(objs).each(function() {
+                if(this.obj == that._owner) {
+                    return;
+                }
+                if(this.obj._timers.iframes == 0) {
+                    this.obj.damage(that._damage);
+                    console.log(this);
+                    console.log(that._owner);
+                    that.destroy();
+                }
+            });
+        });
+        this.onHit('Solid', function() {
+            this.destroy();
+        });
 
+        return this;
+    },
+    owner: function(o) {
+        this._owner = o;
+        return this;
+    },
 });
 
 Player.init = function () {
