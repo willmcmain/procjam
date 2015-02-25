@@ -36,6 +36,17 @@ Game = {
                     "spr_arrow": [0, 0],
                 },
             },
+            "assets/tiles.png": {
+                "tile": 48,
+                "tileh": 48,
+                "map": {
+                    "tile_grass": [0, 0],
+                    "tile_water": [1, 0],
+                    "tile_town":  [2, 0],
+                    "tile_tree":  [0, 1],
+                    "tile_rock":  [1, 1],
+                },
+            },
         },
     }
 };

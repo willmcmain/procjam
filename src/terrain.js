@@ -2,11 +2,6 @@ var Terrain = {};
 (function () {
 
 // Crafty Components
-Crafty.c('Grid', {
-    init: function() {
-    },
-});
-
 Crafty.c('Tile', {
     init: function() {
         this.requires('2D, Canvas, Color');
@@ -31,6 +26,7 @@ Crafty.c('Tile', {
     tile: function(index, x, y) {
         this.tile = Terrain.tiles[index];
         this.color(this.tile.color);
+        this.requires('tile_' + index);
         this.attr({ x: x * Game.TILE_WIDTH, y:  y * Game.TILE_HEIGHT });
         if(this.tile.solid) {
             this.requires('Collision, Solid');
@@ -68,7 +64,6 @@ Terrain.tiles = {
         name: 'town',
         color: '#BF7900',
         solid: true,
-        //rawcolor: [237, 221, 152],
         rawcolor: [191, 121, 0],
     },
     'stairs': {
