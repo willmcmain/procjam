@@ -4,8 +4,8 @@ Crafty.scene('Game', function () {
     Player.init();
     Terrain.init();
     Map.draw();
-    Crafty.e('Skelly').spawn(100, 100);
-    Crafty.e('Gobbo').spawn(150, 150);
+    Crafty.e('Skelly').spawn(300, 300);
+    Crafty.e('Gobbo').spawn(950, 750);
 });
 
 
