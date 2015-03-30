@@ -120,7 +120,7 @@ Crafty.c('Player', {
             Crafty.e('Arrow')
                 .arrow(this.x, this.y, this.dir)
                 .owner(this);
-            this._timers.attack = 10;
+            this._timers.attack = 15;
         }
     },
 });
@@ -183,9 +183,11 @@ Crafty.c('Arrow', {
         this.onHit('Enemy', function(objs) {
             that = this;
             $(objs).each(function() {
-                this.obj.damage(that._damage);
+                if(this.obj != that._owner) {
+                    this.obj.damage(that._damage);
+                    that.destroy();
+                }
             });
-            this.destroy();
         });
         this.onHit('Player', function(objs) {
             that = this;

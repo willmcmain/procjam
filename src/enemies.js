@@ -42,36 +42,61 @@ Crafty.c('AI', {
 
 Crafty.c('Skelly', {
     _speed: 2.0,
-    _dir: 'down',
+    _movement: {x:0, y:0},
+    _timers: {attack: 0},
     init: function() {
         this.requires('Enemy, AI, spr_skelly')
             .collision([8, 0], [8, 55], [36, 55], [36, 00])
+            .onHit('Solid', this.stop)
             ;
+        this.bind('EnterFrame', function(data) {
+            this.x += this._movement.x;
+            this.y += this._movement.y;
+        });
+
+        this.bind('EnterFrame', function(data) {
+            if(this._timers.attack > 0) {
+                this._timers.attack -= 1;
+            }
+        });
+    },
+
+    stop: function() {
+        this._movement = {x: 0, y: 0};
+        if( this._movement ) {
+            this.x -= this._movement.x;
+            this.y -= this._movement.y;
+        }
     },
 
     spawn: function(x, y) {
         this.attr({x: x, y: y, w: 48, h: 55});
     },
 
-    aix: function(frame) {
-        var dirs = ['up', 'down', 'left', 'right'];
-        if(frame % 60 == 0) {
-            this._dir = dirs[Random.randint(0,3)];
-        }
+    movement: function(dir, speed) {
+        this._movement.x = dir == 'right' ? speed :
+                           dir == 'left'  ? -speed :
+                           0;
+        this._movement.y = dir == 'down' ? speed :
+                           dir == 'up'  ? -speed :
+                           0;
+    },
 
-        switch(this._dir) {
-            case 'up':
-                this.y -= this._speed;
-                break;
-            case 'down':
-                this.y += this._speed;
-                break;
-            case 'left':
-                this.x -= this._speed;
-                break;
-            case 'right':
-                this.x += this._speed;
-                break;
+    movementxy: function(dir, spd) {
+        var n = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+        var nx = dir.x / n;
+        var ny = dir.y / n;
+
+        this._movement.x = nx * spd;
+        this._movement.y = ny * spd;
+    },
+
+    attack: function(dir) {
+        if(this._timers.attack == 0) {
+            Crafty.e('Arrow')
+                .arrow(this.x, this.y, dir)
+                .owner(this);
+            this._timers.attack = 15;
         }
     },
 
@@ -79,12 +104,27 @@ Crafty.c('Skelly', {
         var player = Crafty("Player");
         var dist = Math.sqrt(
             Math.pow(player.x-this.x, 2) + Math.pow(player.y-this.y, 2));
-        var state = dist < 600 ? "attack" : "wander";
+        var state = dist < 400 ? "attack" : "wander";
+        var pvector = {x: player.x - this.x, y: player.y - this.y};
+
+        var pdir = null;
+        if(Math.abs(pvector.x) < 15) {
+            pdir = pvector.y > 0 ? "down" : "up"
+        }
+        else if(Math.abs(pvector.y) < 15) {
+            pdir = pvector.x > 0 ? "right" : "left"
+        }
 
         switch(state) {
             case "attack":
+                var neg = {x: -pvector.x, y: -pvector.y};
+                this.movementxy(neg, 1.5);
+                if(pdir !== null) {
+                    this.attack(pdir);
+                }
                 break;
             case "wander":
+                this.movementxy(pvector, 0);
                 break;
             default:
                 break;
