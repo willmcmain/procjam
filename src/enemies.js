@@ -62,24 +62,15 @@ Crafty.c('Skelly', {
     },
 
     stop: function() {
-        this._movement = {x: 0, y: 0};
         if( this._movement ) {
             this.x -= this._movement.x;
             this.y -= this._movement.y;
         }
+        this._movement = {x: 0, y: 0};
     },
 
     spawn: function(x, y) {
         this.attr({x: x, y: y, w: 48, h: 55});
-    },
-
-    movement: function(dir, speed) {
-        this._movement.x = dir == 'right' ? speed :
-                           dir == 'left'  ? -speed :
-                           0;
-        this._movement.y = dir == 'down' ? speed :
-                           dir == 'up'  ? -speed :
-                           0;
     },
 
     movementxy: function(dir, spd) {
@@ -134,11 +125,82 @@ Crafty.c('Skelly', {
 
 
 Crafty.c('Gobbo', {
+    _speed: 2.0,
+    _movement: {x:0, y:0},
+    _timers: {attack: 0},
     init: function() {
-        this.requires('Enemy, spr_gobbo');
+        this.requires('Enemy, AI, spr_gobbo')
+            .onHit('Solid', this.stop)
+            ;
+
+        this.bind('EnterFrame', function(data) {
+            this.x += this._movement.x;
+            this.y += this._movement.y;
+        });
+
+        this.bind('EnterFrame', function(data) {
+            if(this._timers.attack > 0) {
+                this._timers.attack -= 1;
+            }
+        });
     },
 
     spawn: function(x, y) {
         this.attr({x: x, y: y, w: 48, h: 55});
+    },
+
+    stop: function() {
+        if( this._movement ) {
+            this.x -= this._movement.x;
+            this.y -= this._movement.y;
+        }
+        this._movement = {x: 0, y: 0};
+    },
+
+    movementxy: function(dir, spd) {
+        var n = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+        var nx = dir.x / n;
+        var ny = dir.y / n;
+
+        this._movement.x = nx * spd;
+        this._movement.y = ny * spd;
+    },
+
+    attack: function(dir) {
+        var f = Crafty.e('Fireball').fireball({x: this.x, y: this.y}, dir);
+        f._owner = this;
+        console.log('attack player', dir);
+    },
+
+    ai: function(frame) {
+        var player = Crafty("Player");
+        var dist = Math.sqrt(
+            Math.pow(player.x-this.x, 2) + Math.pow(player.y-this.y, 2));
+        var state = dist < 400 ? "attack" : "wander";
+        var pvector = {x: player.x - this.x, y: player.y - this.y};
+
+        var pdir = null;
+        if(Math.abs(pvector.x) < 15) {
+            pdir = pvector.y > 0 ? "down" : "up"
+        }
+        else if(Math.abs(pvector.y) < 15) {
+            pdir = pvector.x > 0 ? "right" : "left"
+        }
+
+        switch(state) {
+            case "attack":
+                var neg = {x: -pvector.x, y: -pvector.y};
+                this.movementxy(neg, 1.5);
+                if(this._timers.attack == 0) {
+                    this.attack(pvector);
+                    this._timers.attack = 30;
+                }
+                break;
+            case "wander":
+                this.movementxy(pvector, 0);
+                break;
+            default:
+                break;
+        }
     },
 });

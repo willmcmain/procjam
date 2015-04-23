@@ -1,13 +1,15 @@
 var Player = {};
 (function () {
 
+
 Crafty.c('Entity', {
     init: function() {
         this.requires('2D, Canvas')
-            .requires('WiredHitBox')
+            //.requires('WiredHitBox')
             ;
     }
 });
+
 
 Crafty.c('Despawn', {
     init: function() {
@@ -23,6 +25,7 @@ Crafty.c('Despawn', {
         });
     },
 });
+
 
 Crafty.c('Player', {
     _timers: {iframes: 0, attack: 0},
@@ -117,10 +120,29 @@ Crafty.c('Player', {
 
     attack: function() {
         if(this._timers.attack == 0) {
+            var x, y;
+            switch(this.dir) {
+                case 'up':
+                    x = this.x + 8;
+                    y = this.y - 16;
+                    break;
+                case 'down':
+                    x = this.x + 8;
+                    y = this.y + 32;
+                    break;
+                case 'right':
+                    x = this.x + 32;
+                    y = this.y + 14;
+                    break;
+                case 'left':
+                    x = this.x - 16;
+                    y = this.y + 14;
+                    break;
+            }
             Crafty.e('Arrow')
-                .arrow(this.x, this.y, this.dir)
+                .arrow(x, y, this.dir)
                 .owner(this);
-            this._timers.attack = 15;
+            this._timers.attack = 30;
         }
     },
 });
@@ -214,6 +236,48 @@ Crafty.c('Arrow', {
         return this;
     },
 });
+
+
+Crafty.c('Fireball', {
+    _spd: 5.0,
+    _movement: {x: 0.0, y: 0.0},
+    _owner: null,
+    init: function() {
+        this.requires('Entity, Collision, Despawn, SpriteAnimation')
+            .requires('spr_fireball')
+            .attr({z:9})
+            ;
+        this.bind('EnterFrame', function() {
+            this.x += this._movement.x;
+            this.y += this._movement.y;
+        });
+        this.onHit('Player', function(objs) {
+            that = this;
+            $(objs).each(function() {
+                if(this.obj == that._owner) {
+                    return;
+                }
+                if(this.obj._timers.iframes == 0) {
+                    this.obj.damage(that._damage);
+                    console.log(this);
+                    console.log(that._owner);
+                    that.destroy();
+                }
+            });
+        });
+        this.onHit('Solid', function() {
+            this.destroy();
+        });
+    },
+    fireball: function(loc, dir) {
+        this.attr({x: loc.x, y: loc.y});
+        var mag = Math.sqrt(dir.x * dir.x + dir.y * dir.y);
+        this._movement.x = dir.x * this._spd / mag;
+        this._movement.y = dir.y * this._spd / mag;
+        return this;
+    },
+});
+
 
 Player.init = function () {
     this.player = Crafty.e('Player');
