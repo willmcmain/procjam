@@ -219,8 +219,6 @@ Crafty.c('Arrow', {
                 }
                 if(this.obj._timers.iframes == 0) {
                     this.obj.damage(that._damage);
-                    console.log(this);
-                    console.log(that._owner);
                     that.destroy();
                 }
             });
@@ -240,6 +238,7 @@ Crafty.c('Arrow', {
 
 Crafty.c('Fireball', {
     _spd: 5.0,
+    _damage: 10,
     _movement: {x: 0.0, y: 0.0},
     _owner: null,
     init: function() {
@@ -259,8 +258,6 @@ Crafty.c('Fireball', {
                 }
                 if(this.obj._timers.iframes == 0) {
                     this.obj.damage(that._damage);
-                    console.log(this);
-                    console.log(that._owner);
                     that.destroy();
                 }
             });

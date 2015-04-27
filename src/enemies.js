@@ -93,6 +93,9 @@ Crafty.c('Skelly', {
 
     ai: function(frame) {
         var player = Crafty("Player");
+        if(player.length == 0) {
+            return;
+        }
         var dist = Math.sqrt(
             Math.pow(player.x-this.x, 2) + Math.pow(player.y-this.y, 2));
         var state = dist < 400 ? "attack" : "wander";
@@ -169,11 +172,13 @@ Crafty.c('Gobbo', {
     attack: function(dir) {
         var f = Crafty.e('Fireball').fireball({x: this.x, y: this.y}, dir);
         f._owner = this;
-        console.log('attack player', dir);
     },
 
     ai: function(frame) {
         var player = Crafty("Player");
+        if(player.length == 0) {
+            return;
+        }
         var dist = Math.sqrt(
             Math.pow(player.x-this.x, 2) + Math.pow(player.y-this.y, 2));
         var state = dist < 400 ? "attack" : "wander";
