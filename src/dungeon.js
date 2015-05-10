@@ -30,7 +30,58 @@ BSP = function(val) {
 Dungeon = {};
 
 (function() {
+
 var SPREAD = 0.25;
+
+var gen_map = function(w, h, rooms, tunnels) {
+    // Create empty map
+    var map = [];
+    for(var x=0; x < w; x++) {
+        var row = [];
+        for(var y=0; y < h; y++) {
+            row.push(0);
+        }
+        map.push(row);
+    }
+
+    // Carve rooms
+    for(var i=0; i < rooms.length; i++) {
+        var room = rooms[i];
+        for(var x=room.x; x<(room.x+room.w); x++) {
+            for(var y=room.y; y<(room.y+room.h); y++) {
+                map[x][y] = 1;
+            }
+        }
+    }
+
+    // Carve tunnels
+    for(var i=0; i < tunnels.length; i++) {
+        var tun = [
+            {x: tunnels[i][0][0], y: tunnels[i][0][1]},
+            {x: tunnels[i][1][0], y: tunnels[i][1][1]},
+        ];
+
+        // Vertical
+        if(tun[0].x == tun[1].x) {
+            for(var y = tun[0].y; y < tun[1].y; y++) {
+                for(var x = tun[0].x - 2; x < tun[0].x + 2; x++) {
+                    map[x][y] = 1;
+                }
+            }
+        }
+        // Horizontal
+        else if(tun[0].y == tun[1].y) {
+            for(var x = tun[0].x; x < tun[1].x; x++) {
+                for(var y = tun[0].y - 2; y < tun[0].y + 2; y++) {
+                    map[x][y] = 1;
+                }
+            }
+        }
+    }
+
+    return map;
+}
+
 
 Dungeon.make_dungeon = function(w, h) {
     // Create tree
@@ -40,10 +91,14 @@ Dungeon.make_dungeon = function(w, h) {
     // Connect rooms
     var tunnels = Dungeon.gen_tunnels(tree, 0);
 
+    // Generate Map
+    var map = gen_map(w, h, rooms, tunnels);
+
     return {
         tree: tree,
         rooms: rooms,
         tunnels: tunnels,
+        map: map,
     };
 };
 
@@ -70,13 +125,16 @@ Dungeon.gen_rooms = function(tree) {
     var spaces = tree.get_rooms();
     var rooms = [];
     for(var i = 0; i < spaces.length; i++) {
-        var vspread = Random.randint(5,30) / 100;
+        var vspread = Random.randint(5,20) / 100;
         var hspread = vspread;
+        var vspace = Math.max(vspread * spaces[i].h, 1);
+        var hspace = Math.max(hspread * spaces[i].w, 1);
+
         var room = {
-            x: Math.floor(spaces[i].x + (vspread*spaces[i].w)),
-            y: Math.floor(spaces[i].y + (hspread*spaces[i].h)),
-            w: Math.floor(spaces[i].w * (1-2*vspread)),
-            h: Math.floor(spaces[i].h * (1-2*hspread)),
+            x: Math.floor(spaces[i].x + hspace),
+            y: Math.floor(spaces[i].y + vspace),
+            w: Math.floor(spaces[i].w - 2*hspace),
+            h: Math.floor(spaces[i].h - 2*vspace),
         };
         rooms.push(room);
     }
@@ -157,11 +215,13 @@ Dungeon.draw = function(dungeon) {
     var i, y;
     var width = tree.value.space.w;
     var height = tree.value.space.h;
+
     var canvas = $('#test1')[0];
     canvas.width = width;
     canvas.height = height;
     var context = canvas.getContext('2d');
     var imgdata = context.createImageData(width, height);
+
     var spaces = tree.get_rooms();
 
     // Draw spaces in black
@@ -239,6 +299,40 @@ Dungeon.draw = function(dungeon) {
         context.lineTo(tun[1][0], tun[1][1]);
         context.stroke();
     }
+};
+
+
+Dungeon.draw_map = function(map) {
+    var width = map.length;
+    var height = map[0].length;
+
+    var canvas = $('#test1')[0];
+    canvas.width = width;
+    canvas.height = height;
+    var context = canvas.getContext('2d');
+    var imgdata = context.createImageData(width, height);
+
+    for(var x=0; x < width; x++) {
+        for(var y=0; y < height; y++) {
+            var i = (y*width+x) * 4;
+            switch(map[x][y]) {
+                case 0:
+                    imgdata.data[i+0] = 0;
+                    imgdata.data[i+1] = 0;
+                    imgdata.data[i+2] = 0;
+                    imgdata.data[i+3] = 255;
+                    break;
+                case 1:
+                    imgdata.data[i+0] = 255;
+                    imgdata.data[i+1] = 255;
+                    imgdata.data[i+2] = 255;
+                    imgdata.data[i+3] = 255;
+                    break;
+            }
+        }
+    }
+
+    context.putImageData(imgdata, 0, 0);
 };
 
 })()
