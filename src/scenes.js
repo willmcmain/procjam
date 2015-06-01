@@ -3,8 +3,6 @@ Crafty.scene('Game', function () {
     Crafty.viewport.clampToEntities = false;
     Player.init();
 
-    var map = Terrain.gen_area(Game.MAP_WIDTH, Game.MAP_HEIGHT);
-    Game.overworld = Terrain.Map(map, Game.MAP_WIDTH, Game.MAP_HEIGHT);
     Game.set_map(Game.overworld);
     //MiniMap.draw();
     //Crafty.e('Skelly').spawn(300, 300);

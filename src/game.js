@@ -11,6 +11,9 @@ Game = {
 
     start: function() {
         Crafty.init(1024, 768);
+        //this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT);
+        this.overworld = Dungeon.generate(50, 50);
+
         Crafty.enterScene('Loading');
     },
 
@@ -62,6 +65,8 @@ Game = {
                     "tile_town":  [2, 0],
                     "tile_tree":  [0, 1],
                     "tile_rock":  [1, 1],
+                    "tile_wall":  [0, 1],
+                    "tile_floor": [0, 0],
                 },
             },
         },
@@ -83,7 +88,7 @@ MiniMap = {
         for(var x=0; x<w; x++) {
             for(var y=0; y<h; y++) {
                 var i = (y*w+x) * 4;
-                var t = Terrain.tiles[Terrain.map[x][y]];
+                var t = Map.tiles[Terrain.map[x][y]];
                 imgdata.data[i+0] = t.rawcolor[0];
                 imgdata.data[i+1] = t.rawcolor[1];
                 imgdata.data[i+2] = t.rawcolor[2];

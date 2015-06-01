@@ -1,8 +1,14 @@
-(function() {
-SPREAD = 0.25;
-
 Dungeon = {};
 
+(function() {
+Dungeon.generate = function(w, h) {
+    var d = Dungeon.Dungeon(w, h);
+    d.generate();
+    return Map.Map(d.map, w, h);
+};
+
+
+SPREAD = 0.25;
 
 BSPTree = {
     value: null,
@@ -81,7 +87,7 @@ BSPTree = {
 };
 
 
-Dungeon.Dungeon = {
+Dungeon._Dungeon = {
     map: null,
     tree: null,
     rooms: null,
@@ -204,6 +210,12 @@ Dungeon.Dungeon = {
     },
 };
 
+Dungeon.Dungeon = function(w, h) {
+    var obj = Object.create(Dungeon._Dungeon);
+    obj.init(w, h);
+    return obj;
+}
+
 
 Canvas = function(id, w, h) {
     var canvas = $(id)[0];
@@ -236,7 +248,7 @@ Canvas = function(id, w, h) {
 };
 
 
-Dungeon.Dungeon.draw = function() {
+Dungeon._Dungeon.draw = function() {
     var canvas = Canvas('#test1', this.w, this.h);
     var tree = this.tree;
     var spaces = tree.get_spaces();
@@ -291,7 +303,7 @@ Dungeon.Dungeon.draw = function() {
 };
 
 
-Dungeon.Dungeon.draw_map = function() {
+Dungeon._Dungeon.draw_map = function() {
     var map = this.map;
     canvas = Canvas('#test1', this.w, this.h);
 
@@ -310,6 +322,5 @@ Dungeon.Dungeon.draw_map = function() {
 
     canvas.draw();
 };
-
 
 })()
