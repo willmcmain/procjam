@@ -1,8 +1,100 @@
-var Terrain = {};
-(function () {
+Terrain = {};
 
-// Crafty Components
+(function () {
+Crafty.c('Exit', {
+    SIZE: 2,
+    init: function(id, x, y) {
+        this.requires('2D, Collision')
+            //.requires('Canvas, WiredHitBox')
+            ;
+        this.onHit('Player', function() {
+            console.log('Transition to dungeon #' + this.id);
+        });
+    },
+    exit: function(id, x, y) {
+        this.id = id;
+        this.attr({
+                x: (x * Game.TILE_WIDTH) + (Game.TILE_WIDTH/2) - this.SIZE/2,
+                y: (y * Game.TILE_HEIGHT) + (Game.TILE_HEIGHT/2) - this.SIZE/2,
+                w: this.SIZE,
+                h: this.SIZE,
+            });
+        return this;
+    },
+});
+
+/*******************************************************************************
+ * Map Object
+ ******************************************************************************/
+Terrain.Map = function(map, w, h) {
+    var _Map = {
+        map: map,
+        entities: [],
+        exits: [],
+        loaded: null,
+        tileset: null,
+
+        init: function(w, h) {
+            this.loaded = Utils.array2d(w, h, false);
+
+            return this;
+        },
+
+        load: function() {
+            this.load_visible();
+            var that = this;
+            this._bind = Crafty.bind('InvalidateViewport', function() {
+                that.load_visible();
+            });
+
+            // Exits
+            var id = 0;
+            for(var x=0; x<w; x++) {
+                for(var y=0; y<h; y++) {
+                    if(this.map[x][y] == 'stairs') {
+                        this.exits.push(
+                            Crafty.e('Exit').exit(id, x, y)
+                            );
+                        id++;
+                    }
+                }
+            }
+        },
+
+        unload: function() {
+            Crafty.unbind('InvalidateViewport', this._bind);
+        },
+
+        load_visible: function() {
+            var xmin = Math.floor((-Crafty.viewport._x) / Game.TILE_WIDTH);
+            var xmax = Math.ceil((-Crafty.viewport._x + Crafty.viewport._width)
+                / Game.TILE_WIDTH);
+            var ymin = Math.floor((-Crafty.viewport._y) / Game.TILE_HEIGHT);
+            var ymax = Math.ceil((-Crafty.viewport._y + Crafty.viewport._height)
+                / Game.TILE_HEIGHT);
+            for(var x = Math.max(xmin,0); x<Math.min(xmax, this.map.length);
+                    x++) {
+                for(var y = Math.max(ymin,0);
+                        y<Math.min(ymax, this.map[x].length); y++) {
+                    if(!this.loaded[x][y]) {
+                        Crafty.e('Tile')
+                            .owner(this)
+                            .tile(this.map[x][y], x, y)
+                            ;
+                    }
+                }
+            }
+        },
+    };
+    return Object.create(_Map).init(w, h);
+};
+
+
+/*******************************************************************************
+ * Crafty Components
+ ******************************************************************************/
 Crafty.c('Tile', {
+    _owner: null,
     init: function() {
         this.requires('2D, Canvas, Color');
         this.attr({
@@ -19,7 +111,7 @@ Crafty.c('Tile', {
                 this.destroy();
                 var i = Math.floor(this.x / Game.TILE_WIDTH);
                 var j = Math.floor(this.y / Game.TILE_HEIGHT);
-                Terrain.map_loaded[i][j] = false;
+                this._owner.loaded[i][j] = false;
             }
         });
     },
@@ -31,11 +123,19 @@ Crafty.c('Tile', {
         if(this.tile.solid) {
             this.requires('Collision, Solid');
         }
-        Terrain.map_loaded[x][y] = true;
+        this._owner.loaded[x][y] = true;
+        return this;
     },
+    owner: function(o) {
+        this._owner = o;
+        return this;
+    }
 });
 
-// Terrain Module
+
+/*******************************************************************************
+ * Terrain Module
+ ******************************************************************************/
 Terrain.tiles = {
     'grass': {
         name: 'grass',
@@ -50,7 +150,7 @@ Terrain.tiles = {
     },
     'rock': {
         name: 'rock',
-        color: '#88888',
+        color: '#888888',
         //solid: true,
         rawcolor: [136, 136, 136],
     },
@@ -73,19 +173,18 @@ Terrain.tiles = {
     },
 }
 
-Terrain.map = [];
-Terrain.map_loaded = [];
 
-var array2d = function(w, h, def) {
-    var array = [];
-    for(var x = 0; x < w; x++) {
-        array[x] = [];
-        for(var y = 0; y < h; y++) {
-            array[x][y] = def;
-        }
-    }
-    return array;
+/******************************************************************************
+ * Overworld Generation
+ *****************************************************************************/
+Terrain.gen_area = function(w, h) {
+    var map = Utils.array2d(w, h, 'grass');
+    map = gen_terrain(map);
+    map = gen_villages(map);
+    map = gen_dungeon_entrances(map);
+    return map;
 }
+
 
 var gen_terrain = function(map) {
     for(var x = 0; x < map.length; x++) {
@@ -107,6 +206,7 @@ var gen_terrain = function(map) {
     return map;
 }
 
+
 var gen_dungeon_entrances = function(map) {
     var n = 3;
     var entrances = [];
@@ -123,6 +223,7 @@ var gen_dungeon_entrances = function(map) {
     }
     return map;
 }
+
 
 var gen_villages = function(map) {
     var n = Noise.uniformint(15, 20);
@@ -141,6 +242,7 @@ var gen_villages = function(map) {
     return map;
 }
 
+
 var gen_village = function(map, vx, vy) {
     var n_buildings = Noise.uniformint(3, 5);
     var buildings = [];
@@ -155,12 +257,14 @@ var gen_village = function(map, vx, vy) {
     return map;
 }
 
+
 var gen_building = function() {
     var w = Noise.uniformint(4, 6)
       , h = Noise.uniformint(w-1, w)
-      , building = array2d(w, h, 'town');
+      , building = Utils.array2d(w, h, 'town');
     return building;
 }
+
 
 var place_building = function(map, building, x, y) {
     // Check placement
@@ -178,38 +282,6 @@ var place_building = function(map, building, x, y) {
         }
     }
     return map;
-}
-
-Terrain.gen_area = function(w, h) {
-    var map = array2d(w, h, 'grass');
-    map = gen_terrain(map);
-    map = gen_villages(map);
-    map = gen_dungeon_entrances(map);
-    return map;
-}
-
-Terrain.init = function() {
-    this.map = this.gen_area(Game.MAP_WIDTH, Game.MAP_HEIGHT);
-    this.map_loaded = array2d(Game.MAP_WIDTH, Game.MAP_HEIGHT, false);
-    this.load_visible();
-    Crafty.bind('InvalidateViewport', this.load_visible);
-}
-
-Terrain.load_visible = function() {
-    var xmin = Math.floor((-Crafty.viewport._x) / Game.TILE_WIDTH);
-    var xmax = Math.ceil((-Crafty.viewport._x + Crafty.viewport._width)
-        / Game.TILE_WIDTH);
-    var ymin = Math.floor((-Crafty.viewport._y) / Game.TILE_HEIGHT);
-    var ymax = Math.ceil((-Crafty.viewport._y + Crafty.viewport._height)
-        / Game.TILE_HEIGHT);
-    for(var x = Math.max(xmin,0); x<Math.min(xmax, Terrain.map.length); x++) {
-        for(var y = Math.max(ymin,0);
-                y<Math.min(ymax, Terrain.map[x].length); y++) {
-            if(!Terrain.map_loaded[x][y]) {
-                Crafty.e('Tile').tile(Terrain.map[x][y], x, y);
-            }
-        }
-    }
 }
 
 })();

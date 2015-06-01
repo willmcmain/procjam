@@ -7,9 +7,19 @@ Game = {
     MAP_HEIGHT: 300,
     SEED: 1928,
 
+    current: null,
+
     start: function() {
         Crafty.init(1024, 768);
         Crafty.enterScene('Loading');
+    },
+
+    set_map: function(map) {
+        if(this.current) {
+            this.current.unload();
+        }
+        this.current = map;
+        this.current.load();
     },
 
     assets: {
@@ -60,7 +70,7 @@ Game = {
 
 
 // Draw stuff on test canvas
-Map = {
+MiniMap = {
     draw: function() {
         var w = Terrain.map.length;
         var h = Terrain.map[0].length;
@@ -82,6 +92,11 @@ Map = {
         }
         ctx.putImageData(imgdata,0,0);
     }
+}
+
+
+load_debug = function() {
+    //Player.player.bind(
 }
 
 

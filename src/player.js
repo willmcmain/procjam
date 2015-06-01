@@ -35,8 +35,8 @@ Crafty.c('Player', {
             .requires('spr_player')
             .fourway(4)
             .attr({
-                x: 700,
-                y: 600,
+                x: 2248,
+                y: 8688,
                 z: 10,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})

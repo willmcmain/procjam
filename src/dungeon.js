@@ -1,338 +1,315 @@
-// BSP Dungeon Generation
-BSP = function(val) {
-    return {
-        value: val,
-        children: null,
-        set_children: function(child1, child2) {
-            this.children = [child1, child2];
-        },
-        print: function() {
-            return (
-                "[" + this.value + ": ("
-                + (this.children ? this.children[0].print() : 'null')
-                + ', '
-                + (this.children ? this.children[1].print() : 'null')
-                + ")]"
-            );
-        },
-        get_rooms: function() {
-            if(this.children === null) {
-                return [this.value.space];
-            }
-            else {
-                return this.children[0].get_rooms()
-                    .concat(this.children[1].get_rooms());
-            }
-        },
-    };
-};
+(function() {
+SPREAD = 0.25;
 
 Dungeon = {};
 
-(function() {
 
-var SPREAD = 0.25;
+BSPTree = {
+    value: null,
+    children: null,
 
-var gen_map = function(w, h, rooms, tunnels) {
-    // Create empty map
-    var map = [];
-    for(var x=0; x < w; x++) {
-        var row = [];
-        for(var y=0; y < h; y++) {
-            row.push(0);
+    init: function(val) {
+        this.value = val;
+        return this;
+    },
+
+    set_children: function(child1, child2) {
+        this.children = [child1, child2];
+    },
+
+    print: function() {
+        return (
+            "[" + this.value + ": ("
+            + (this.children ? this.children[0].print() : 'null')
+            + ', '
+            + (this.children ? this.children[1].print() : 'null')
+            + ")]"
+        );
+    },
+
+    get_spaces: function() {
+        if(this.children === null) {
+            return [this.value.space];
         }
-        map.push(row);
-    }
-
-    // Carve rooms
-    for(var i=0; i < rooms.length; i++) {
-        var room = rooms[i];
-        for(var x=room.x; x<(room.x+room.w); x++) {
-            for(var y=room.y; y<(room.y+room.h); y++) {
-                map[x][y] = 1;
-            }
+        else {
+            return this.children[0].get_spaces()
+                .concat(this.children[1].get_spaces());
         }
-    }
+    },
 
-    // Carve tunnels
-    for(var i=0; i < tunnels.length; i++) {
-        var tun = [
-            {x: tunnels[i][0][0], y: tunnels[i][0][1]},
-            {x: tunnels[i][1][0], y: tunnels[i][1][1]},
+    split: function() {
+        var space = this.value.space;
+        if(space.w < 10 || space.h < 10) {
+            return null;
+        }
+        if(space.w > space.h) {
+            var dir = 'v';
+        }
+        else if(space.w < space.h) {
+            var dir = 'h';
+        }
+        else {
+            var dir = Random.randint(0,1) ? 'v' : 'h';
+        }
+
+        var ret = [];
+        if(dir == 'v') {
+            var center = Math.floor(space.w / 2);
+            var spread = Math.floor(space.w * SPREAD);
+            var split = Random.randint(center-spread, center+spread);
+            var first  = {x: space.x, y: space.y, w: split, h: space.h}
+            var second = {x: space.x+split, y: space.y,
+                          w: space.w-split, h: space.h}
+        }
+        else if(dir == 'h') {
+            var center = Math.floor(space.h / 2);
+            var spread = Math.floor(space.h * SPREAD);
+            var split = Random.randint(center-spread, center+spread);
+            var first  = {x: space.x, y: space.y, w: space.w, h: split }
+            var second = {x: space.x, y: space.y+split,
+                          w: space.w, h: space.h-split}
+        }
+        this.value.dir = dir;
+        this.value.split = split;
+        this.children = [
+            Object.create(BSPTree).init({space: first}),
+            Object.create(BSPTree).init({space: second})
         ];
 
-        // Vertical
-        if(tun[0].x == tun[1].x) {
-            for(var y = tun[0].y; y < tun[1].y; y++) {
-                for(var x = tun[0].x - 2; x < tun[0].x + 2; x++) {
-                    map[x][y] = 1;
+        return this.children;
+    },
+};
+
+
+Dungeon.Dungeon = {
+    map: null,
+    tree: null,
+    rooms: null,
+    tunnels: null,
+
+    init: function(w, h) {
+        this.w = w;
+        this.h = h;
+        return this;
+    },
+
+    generate: function() {
+        this.gen_tree();
+        this.gen_rooms();
+        this.gen_tunnels();
+        this.gen_map();
+    },
+
+    gen_map: function() {
+        // Create empty map
+        var map = [];
+        for(var x=0; x < this.w; x++) {
+            var row = [];
+            for(var y=0; y < this.h; y++) {
+                row.push('wall');
+            }
+            map.push(row);
+        }
+        // Carve rooms
+        for(var i=0; i < this.rooms.length; i++) {
+            var room = this.rooms[i];
+            for(var x=room.x; x<(room.x+room.w); x++) {
+                for(var y=room.y; y<(room.y+room.h); y++) {
+                    map[x][y] = 'floor';
                 }
             }
         }
-        // Horizontal
-        else if(tun[0].y == tun[1].y) {
-            for(var x = tun[0].x; x < tun[1].x; x++) {
-                for(var y = tun[0].y - 2; y < tun[0].y + 2; y++) {
-                    map[x][y] = 1;
+        // Carve tunnels
+        for(var i=0; i < this.tunnels.length; i++) {
+            var tun = [
+                {x: this.tunnels[i][0][0], y: this.tunnels[i][0][1]},
+                {x: this.tunnels[i][1][0], y: this.tunnels[i][1][1]},
+            ];
+            // Vertical
+            if(tun[0].x == tun[1].x) {
+                for(var y = tun[0].y; y < tun[1].y; y++) {
+                    for(var x = tun[0].x - 2; x < tun[0].x + 2; x++) {
+                        map[x][y] = 'floor';
+                    }
+                }
+            }
+            // Horizontal
+            else if(tun[0].y == tun[1].y) {
+                for(var x = tun[0].x; x < tun[1].x; x++) {
+                    for(var y = tun[0].y - 2; y < tun[0].y + 2; y++) {
+                        map[x][y] = 'floor';
+                    }
                 }
             }
         }
-    }
+        this.map = map;
+    },
 
-    return map;
-}
+    gen_tunnels: function() {
+        this.tunnels = this._r_gen_tunnels(this.tree, 0);
+    },
+
+    _r_gen_tunnels: function(tree, level) {
+        var tunnels = [];
+
+        if(tree.children === null) {
+            return [];
+        }
+        var s0 = tree.children[0].value.space;
+        var s1 = tree.children[1].value.space;
+        var tun = [[s0.x + Math.floor(s0.w / 2), s0.y + Math.floor(s0.h / 2)],
+                   [s1.x + Math.floor(s1.w / 2), s1.y + Math.floor(s1.h / 2)]];
+
+        return [tun].concat(
+            this._r_gen_tunnels(tree.children[0], level+1),
+            this._r_gen_tunnels(tree.children[1], level+1)
+        );
+    },
+
+    gen_rooms: function() {
+        var spaces = this.tree.get_spaces();
+        this.rooms = [];
+        for(var i = 0; i < spaces.length; i++) {
+            var vspread = Random.randint(5,20) / 100;
+            var hspread = vspread;
+            var vspace = Math.max(vspread * spaces[i].h, 1);
+            var hspace = Math.max(hspread * spaces[i].w, 1);
+
+            var room = {
+                x: Math.floor(spaces[i].x + hspace),
+                y: Math.floor(spaces[i].y + vspace),
+                w: Math.floor(spaces[i].w - 2*hspace),
+                h: Math.floor(spaces[i].h - 2*vspace),
+            };
+            this.rooms.push(room);
+        }
+    },
+
+    gen_tree: function() {
+        this.tree = Object.create(BSPTree).init(
+            {space: {x: 0, y: 0, w: this.w, h: this.h}}
+        );
+        var nodes = [this.tree];
+
+        for(var i = 0; i < 4; i++) {
+            var next_nodes = [];
+            for(var j = 0; j < nodes.length; j++) {
+                var leaves = nodes[j].split();
+                if(leaves !== null) {
+                    next_nodes = next_nodes.concat(leaves);
+                }
+            }
+            nodes = next_nodes;
+        }
+    },
+};
 
 
-Dungeon.make_dungeon = function(w, h) {
-    // Create tree
-    var tree = Dungeon.gen_tree(w,h);
-    // Create rooms
-    var rooms = Dungeon.gen_rooms(tree);
-    // Connect rooms
-    var tunnels = Dungeon.gen_tunnels(tree, 0);
+Canvas = function(id, w, h) {
+    var canvas = $(id)[0];
+    canvas.width = w;
+    canvas.height = h;
 
-    // Generate Map
-    var map = gen_map(w, h, rooms, tunnels);
-
-    return {
-        tree: tree,
-        rooms: rooms,
-        tunnels: tunnels,
-        map: map,
+    var _Canvas = {
+        _canvas: canvas,
+        width: w,
+        height: h,
+        context: canvas.getContext('2d'),
+        init: function() {
+            this.imgdata = this.context.createImageData(
+                this.width, this.height);
+            return this;
+        },
+        set_pixel: function(x, y, color) {
+            var i = (y*this.width+x) * 4;
+            this.imgdata.data[i+0] = color.r;
+            this.imgdata.data[i+1] = color.g;
+            this.imgdata.data[i+2] = color.b;
+            this.imgdata.data[i+3] = 255;
+        },
+        draw: function() {
+            this.context.putImageData(this.imgdata, 0, 0);
+        },
     };
+
+    return Object.create(_Canvas).init();
 };
 
 
-Dungeon.gen_tunnels = function(tree, level) {
-    var tunnels = [];
-
-    if(tree.children === null) {
-        return [];
-    }
-    var s0 = tree.children[0].value.space;
-    var s1 = tree.children[1].value.space;
-    var tun = [[s0.x + Math.floor(s0.w / 2), s0.y + Math.floor(s0.h / 2)],
-               [s1.x + Math.floor(s1.w / 2), s1.y + Math.floor(s1.h / 2)]];
-
-    return [tun].concat(
-        Dungeon.gen_tunnels(tree.children[0], level+1),
-        Dungeon.gen_tunnels(tree.children[1], level+1)
-    );
-};
-
-
-Dungeon.gen_rooms = function(tree) {
-    var spaces = tree.get_rooms();
-    var rooms = [];
-    for(var i = 0; i < spaces.length; i++) {
-        var vspread = Random.randint(5,20) / 100;
-        var hspread = vspread;
-        var vspace = Math.max(vspread * spaces[i].h, 1);
-        var hspace = Math.max(hspread * spaces[i].w, 1);
-
-        var room = {
-            x: Math.floor(spaces[i].x + hspace),
-            y: Math.floor(spaces[i].y + vspace),
-            w: Math.floor(spaces[i].w - 2*hspace),
-            h: Math.floor(spaces[i].h - 2*vspace),
-        };
-        rooms.push(room);
-    }
-    return rooms;
-};
-
-
-Dungeon.make_root = function(w, h) {
-    var val = {
-        space: {x: 0, y: 0, w: w, h: h},
-    }
-    var tree = BSP(val);
-    return tree;
-};
-
-
-Dungeon.split_tree = function(tree) {
-    var space = tree.value.space;
-    if(space.w < 10 || space.h < 10) {
-        return null;
-    }
-    if(space.w > space.h) {
-        var dir = 'v';
-    }
-    else {
-        var dir = 'h';
-    }
-    //var dir = Random.randint(0,1) ? 'v' : 'h';
-
-    var ret = [];
-    if(dir == 'v') {
-        var center = Math.floor(space.w / 2);
-        var spread = Math.floor(space.w * SPREAD);
-        var split = Random.randint(center-spread, center+spread);
-        var first  = {x: space.x, y: space.y, w: split, h: space.h}
-        var second = {x: space.x+split, y: space.y,
-                      w: space.w-split, h: space.h}
-    }
-    else if(dir == 'h') {
-        var center = Math.floor(space.h / 2);
-        var spread = Math.floor(space.h * SPREAD);
-        var split = Random.randint(center-spread, center-spread);
-        var first  = {x: space.x, y: space.y, w: space.w, h: split }
-        var second = {x: space.x, y: space.y+split,
-                      w: space.w, h: space.h-split}
-    }
-    tree.value.dir = dir;
-    tree.value.split = split;
-    first  = BSP({space: first});
-    second = BSP({space: second});
-    tree.set_children(first, second);
-
-    return tree.children;
-};
-
-
-Dungeon.gen_tree = function(w, h) {
-    var tree = Dungeon.make_root(w, h);
-    var nodes = [tree];
-
-    for(var i = 0; i < 4; i++) {
-        var next_nodes = [];
-        for(var j = 0; j < nodes.length; j++) {
-            var leaves = Dungeon.split_tree(nodes[j]);
-            if(leaves !== null) {
-                next_nodes = next_nodes.concat(leaves);
-            }
-        }
-        nodes = next_nodes;
-    }
-
-    return tree;
-};
-
-
-Dungeon.draw = function(dungeon) {
-    var tree = dungeon.tree;
-    var i, y;
-    var width = tree.value.space.w;
-    var height = tree.value.space.h;
-
-    var canvas = $('#test1')[0];
-    canvas.width = width;
-    canvas.height = height;
-    var context = canvas.getContext('2d');
-    var imgdata = context.createImageData(width, height);
-
-    var spaces = tree.get_rooms();
+Dungeon.Dungeon.draw = function() {
+    var canvas = Canvas('#test1', this.w, this.h);
+    var tree = this.tree;
+    var spaces = tree.get_spaces();
+    var y;
 
     // Draw spaces in black
     for(var s=0; s<spaces.length; s++) {
         var space = spaces[s];
         for(var x=space.x; x<(space.x+space.w); x++) {
-            y = space.y;
             // Top
-            i = (y*width+x) * 4;
-            imgdata.data[i+0] = 0;
-            imgdata.data[i+1] = 0;
-            imgdata.data[i+2] = 0;
-            imgdata.data[i+3] = 255;
-
+            y = space.y;
+            canvas.set_pixel(x, y, {r:0, g:0, b:0});
             // Bottom
             y = (space.y+space.h-1);
-            i = (y*width+x) * 4;
-            imgdata.data[i+0] = 0;
-            imgdata.data[i+1] = 0;
-            imgdata.data[i+2] = 0;
-            imgdata.data[i+3] = 255;
-
+            canvas.set_pixel(x, y, {r:0, g:0, b:0});
             // Left/Right
             if(x == space.x || x == (space.x+space.w-1)) {
                 for(y = space.y; y<(space.y+space.h); y++) {
-                    i = (y*width+x) * 4;
-                    imgdata.data[i+0] = 0;
-                    imgdata.data[i+1] = 0;
-                    imgdata.data[i+2] = 0;
-                    imgdata.data[i+3] = 255;
+                    canvas.set_pixel(x, y, {r:0, g:0, b:0});
                 }
             }
         }
     }
 
     // Draw rooms in blue
-    for(var r=0; r<dungeon.rooms.length; r++) {
-        var room = dungeon.rooms[r];
+    for(var r=0; r<this.rooms.length; r++) {
+        var room = this.rooms[r];
         for(var x=room.x; x<(room.x+room.w); x++) {
-            y = room.y;
             // Top
-            i = (y*width+x) * 4;
-            imgdata.data[i+0] = 0;
-            imgdata.data[i+1] = 0;
-            imgdata.data[i+2] = 255;
-            imgdata.data[i+3] = 255;
-
+            y = room.y;
+            canvas.set_pixel(x, y, {r:0, g:0, b:255});
             // Bottom
             y = (room.y+room.h-1);
-            i = (y*width+x) * 4;
-            imgdata.data[i+0] = 0;
-            imgdata.data[i+1] = 0;
-            imgdata.data[i+2] = 255;
-            imgdata.data[i+3] = 255;
-
+            canvas.set_pixel(x, y, {r:0, g:0, b:255});
             // Left/Right
             if(x == room.x || x == (room.x+room.w-1)) {
                 for(y = room.y; y<(room.y+room.h); y++) {
-                    i = (y*width+x) * 4;
-                    imgdata.data[i+0] = 0;
-                    imgdata.data[i+1] = 0;
-                    imgdata.data[i+2] = 255;
-                    imgdata.data[i+3] = 255;
+                    canvas.set_pixel(x, y, {r:0, g:0, b:255});
                 }
             }
         }
     }
-    context.putImageData(imgdata, 0, 0);
+    canvas.draw();
 
-    var tunnels = dungeon.tunnels;
-    for(var t = 0; t < tunnels.length; t++) {
-        var tun = tunnels[t];
-        context.strokeStyle = '#FF0000';
-        context.moveTo(tun[0][0], tun[0][1]);
-        context.lineTo(tun[1][0], tun[1][1]);
-        context.stroke();
+    for(var t = 0; t < this.tunnels.length; t++) {
+        var tun = this.tunnels[t];
+        canvas.context.strokeStyle = '#FF0000';
+        canvas.context.moveTo(tun[0][0], tun[0][1]);
+        canvas.context.lineTo(tun[1][0], tun[1][1]);
+        canvas.context.stroke();
     }
 };
 
 
-Dungeon.draw_map = function(map) {
-    var width = map.length;
-    var height = map[0].length;
+Dungeon.Dungeon.draw_map = function() {
+    var map = this.map;
+    canvas = Canvas('#test1', this.w, this.h);
 
-    var canvas = $('#test1')[0];
-    canvas.width = width;
-    canvas.height = height;
-    var context = canvas.getContext('2d');
-    var imgdata = context.createImageData(width, height);
-
-    for(var x=0; x < width; x++) {
-        for(var y=0; y < height; y++) {
-            var i = (y*width+x) * 4;
+    for(var x=0; x < this.w; x++) {
+        for(var y=0; y < this.h; y++) {
             switch(map[x][y]) {
-                case 0:
-                    imgdata.data[i+0] = 0;
-                    imgdata.data[i+1] = 0;
-                    imgdata.data[i+2] = 0;
-                    imgdata.data[i+3] = 255;
+                case 'wall':
+                    canvas.set_pixel(x, y, {r:0, g:0, b:0});
                     break;
-                case 1:
-                    imgdata.data[i+0] = 255;
-                    imgdata.data[i+1] = 255;
-                    imgdata.data[i+2] = 255;
-                    imgdata.data[i+3] = 255;
+                case 'floor':
+                    canvas.set_pixel(x, y, {r:255, g:255, b:255});
                     break;
             }
         }
     }
 
-    context.putImageData(imgdata, 0, 0);
+    canvas.draw();
 };
+
 
 })()
