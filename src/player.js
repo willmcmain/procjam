@@ -32,11 +32,11 @@ Crafty.c('Player', {
     dir: 'down',
     init: function() {
         this.requires('Entity, Fourway, Collision, SpriteAnimation, Health')
-            .requires('spr_player')
+            .requires('Persist, spr_player')
             .fourway(4)
             .attr({
-                x: 100,
-                y: 100,
+                x: 2200,
+                y: 8800,
                 z: 10,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})
@@ -278,7 +278,6 @@ Crafty.c('Fireball', {
 
 Player.init = function () {
     this.player = Crafty.e('Player');
-    Crafty.viewport.follow(this.player);
 }
 
 })();

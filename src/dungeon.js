@@ -4,7 +4,9 @@ Dungeon = {};
 Dungeon.generate = function(w, h) {
     var d = Dungeon.Dungeon(w, h);
     d.generate();
-    return Map.Map(d.map, w, h);
+    var map = Map.Map(d.map, w, h);
+    map.exit = d.exit;
+    return map;
 };
 
 
@@ -92,6 +94,7 @@ Dungeon._Dungeon = {
     tree: null,
     rooms: null,
     tunnels: null,
+    exit: null,
 
     init: function(w, h) {
         this.w = w;
@@ -134,7 +137,7 @@ Dungeon._Dungeon = {
             // Vertical
             if(tun[0].x == tun[1].x) {
                 for(var y = tun[0].y; y < tun[1].y; y++) {
-                    for(var x = tun[0].x - 2; x < tun[0].x + 2; x++) {
+                    for(var x = tun[0].x - 1; x < tun[0].x + 1; x++) {
                         map[x][y] = 'floor';
                     }
                 }
@@ -142,12 +145,19 @@ Dungeon._Dungeon = {
             // Horizontal
             else if(tun[0].y == tun[1].y) {
                 for(var x = tun[0].x; x < tun[1].x; x++) {
-                    for(var y = tun[0].y - 2; y < tun[0].y + 2; y++) {
+                    for(var y = tun[0].y - 1; y < tun[0].y + 1; y++) {
                         map[x][y] = 'floor';
                     }
                 }
             }
         }
+        // Create exit
+        var room = this.rooms[0];
+        this.exit = {
+            x: Math.floor(room.x + room.w / 2),
+            y: Math.floor(room.y + room.h / 2),
+        }
+        map[this.exit.x][this.exit.y] = 'stairs'
         this.map = map;
     },
 

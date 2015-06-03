@@ -6,37 +6,34 @@ Map = {};
  ******************************************************************************/
 Map.Map = function(map, w, h) {
     var _Map = {
+        dungeon_id: null,
         map: map,
         entities: [],
-        exits: [],
+        entrances: [],
+        exit: null,
         loaded: null,
         tileset: null,
 
         init: function(w, h) {
-            this.loaded = Utils.array2d(w, h, false);
-
             return this;
         },
 
         load: function() {
+            this.loaded = Utils.array2d(w, h, false);
             this.load_visible();
+            for(var i=0; i<this.entrances.length; i++) {
+                var ent = this.entrances[i];
+                Crafty.e('Entrance').entrance(ent.id, ent.x, ent.y);
+            }
+            if(this.exit !== null && this.dungeon_id !== null) {
+                Crafty.e('Exit').exit(this.dungeon_id,
+                    this.exit.x, this.exit.y);
+            }
+
             var that = this;
             this._bind = Crafty.bind('InvalidateViewport', function() {
                 that.load_visible();
             });
-
-            // Exits
-            var id = 0;
-            for(var x=0; x<w; x++) {
-                for(var y=0; y<h; y++) {
-                    if(this.map[x][y] == 'stairs') {
-                        this.exits.push(
-                            Crafty.e('Exit').exit(id, x, y)
-                            );
-                        id++;
-                    }
-                }
-            }
         },
 
         unload: function() {
@@ -119,14 +116,39 @@ Map.tiles = {
 /*******************************************************************************
  * Crafty Components
  ******************************************************************************/
+Crafty.c('Entrance', {
+    SIZE: 2,
+    init: function(id, x, y) {
+        this.requires('2D, Collision')
+            .requires('Canvas, WiredHitBox')
+            ;
+        this.onHit('Player', function() {
+            //console.log('Transition to dungeon #' + this.id);
+            Crafty.enterScene('Dungeon', this.id);
+        });
+    },
+    entrance: function(id, x, y) {
+        this.id = id;
+        this.attr({
+                x: (x * Game.TILE_WIDTH) + (Game.TILE_WIDTH/2) - this.SIZE/2,
+                y: (y * Game.TILE_HEIGHT) + (Game.TILE_HEIGHT/2) - this.SIZE/2,
+                w: this.SIZE,
+                h: this.SIZE,
+            });
+        return this;
+    },
+});
+
+
 Crafty.c('Exit', {
     SIZE: 2,
     init: function(id, x, y) {
         this.requires('2D, Collision')
-            //.requires('Canvas, WiredHitBox')
+            .requires('Canvas, WiredHitBox')
             ;
         this.onHit('Player', function() {
-            console.log('Transition to dungeon #' + this.id);
+            //console.log('Return to overworld #' + this.id);
+            Crafty.enterScene('Overworld', this.id);
         });
     },
     exit: function(id, x, y) {

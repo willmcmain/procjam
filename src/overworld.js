@@ -5,8 +5,21 @@ Overworld = {};
  * Overworld Generation
  *****************************************************************************/
 Overworld.generate = function(w, h) {
-    var map = gen_area(w, h);
-    return Map.Map(map, w, h);
+    var gmap = gen_area(w, h);
+    var map = Map.Map(gmap, w, h);
+
+    // Dungeon entrances
+    var id = 0;
+    for(var x=0; x<w; x++) {
+        for(var y=0; y<h; y++) {
+            if(gmap[x][y] == 'stairs') {
+                map.entrances.push( {id:id, x:x, y:y} );
+                id++;
+            }
+        }
+    }
+
+    return map;
 };
 
 

@@ -6,14 +6,13 @@ Game = {
     MAP_WIDTH: 300,
     MAP_HEIGHT: 300,
     SEED: 1928,
+    dungeons: {},
 
     current: null,
 
     start: function() {
         Crafty.init(1024, 768);
-        //this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT);
-        this.overworld = Dungeon.generate(50, 50);
-
+        this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT)
         Crafty.enterScene('Loading');
     },
 
@@ -65,8 +64,8 @@ Game = {
                     "tile_town":  [2, 0],
                     "tile_tree":  [0, 1],
                     "tile_rock":  [1, 1],
-                    "tile_wall":  [0, 1],
-                    "tile_floor": [0, 0],
+                    "tile_wall":  [3, 0],
+                    "tile_floor": [2, 1],
                 },
             },
         },
