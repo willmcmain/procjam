@@ -32,6 +32,11 @@ var dot = function(g, x, y) {
 
 Noise.seed = function(x) {
     seed = x;
+    var newperm = p.concat(p);
+    for(var i=0; i < newperm.length; i++) {
+        newperm[i] = (newperm[i] + seed) % 256;
+    }
+    perm = newperm;
 }
 
 var seed = 15485863;

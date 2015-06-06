@@ -57,14 +57,14 @@ BSPTree = {
             var dir = 'h';
         }
         else {
-            var dir = Random.randint(0,1) ? 'v' : 'h';
+            var dir = Noise.uniformint(0,1) ? 'v' : 'h';
         }
 
         var ret = [];
         if(dir == 'v') {
             var center = Math.floor(space.w / 2);
             var spread = Math.floor(space.w * SPREAD);
-            var split = Random.randint(center-spread, center+spread);
+            var split = Noise.uniformint(center-spread, center+spread);
             var first  = {x: space.x, y: space.y, w: split, h: space.h}
             var second = {x: space.x+split, y: space.y,
                           w: space.w-split, h: space.h}
@@ -72,7 +72,7 @@ BSPTree = {
         else if(dir == 'h') {
             var center = Math.floor(space.h / 2);
             var spread = Math.floor(space.h * SPREAD);
-            var split = Random.randint(center-spread, center+spread);
+            var split = Noise.uniformint(center-spread, center+spread);
             var first  = {x: space.x, y: space.y, w: space.w, h: split }
             var second = {x: space.x, y: space.y+split,
                           w: space.w, h: space.h-split}
@@ -186,7 +186,7 @@ Dungeon._Dungeon = {
         var spaces = this.tree.get_spaces();
         this.rooms = [];
         for(var i = 0; i < spaces.length; i++) {
-            var vspread = Random.randint(5,20) / 100;
+            var vspread = Noise.uniformint(5,20) / 100;
             var hspread = vspread;
             var vspace = Math.max(vspread * spaces[i].h, 1);
             var hspace = Math.max(hspread * spaces[i].w, 1);

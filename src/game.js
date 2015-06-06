@@ -5,12 +5,13 @@ Game = {
     PLAYER_HEIGHT: 55,
     MAP_WIDTH: 300,
     MAP_HEIGHT: 300,
-    SEED: 1928,
+    SEED: 1927,
     dungeons: {},
 
     current: null,
 
     start: function() {
+        Noise.seed(this.SEED);
         Crafty.init(1024, 768);
         this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT)
         Crafty.enterScene('Loading');
