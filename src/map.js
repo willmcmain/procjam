@@ -120,7 +120,7 @@ Crafty.c('Entrance', {
     SIZE: 2,
     init: function(id, x, y) {
         this.requires('2D, Collision')
-            .requires('Canvas, WiredHitBox')
+            //.requires('Canvas, WiredHitBox')
             ;
         this.onHit('Player', function() {
             //console.log('Transition to dungeon #' + this.id);
@@ -144,7 +144,7 @@ Crafty.c('Exit', {
     SIZE: 2,
     init: function(id, x, y) {
         this.requires('2D, Collision')
-            .requires('Canvas, WiredHitBox')
+            //.requires('Canvas, WiredHitBox')
             ;
         this.onHit('Player', function() {
             //console.log('Return to overworld #' + this.id);

@@ -26,6 +26,86 @@ Crafty.c('Despawn', {
     },
 });
 
+var comb = function(sval, sal, dval, dal) {
+    return sval * sal + dval * dal * (1 - sal);
+};
+
+Crafty.c('Fog', {
+    img: null,
+    _player: null,
+    ready: false,
+    init: function() {
+        this.requires('2D, Canvas');
+        this.attr({
+            x: 0,
+            y: 0,
+            z: 20,
+            w: Game.SCREEN.w,
+            h: Game.SCREEN.h,
+        });
+        this.bind('Draw', this._draw);
+        this.bind('Remove', function() { console.log('remove fog') });
+        this.bind('InvalidateViewport', this._center);
+    },
+
+    player: function(p) {
+        this._player = p;
+        this._gen_img();
+        this._center();
+        return this;
+    },
+
+    _center: function() {
+        this.attr({
+            x: -Crafty.viewport.x,
+            y: -Crafty.viewport.y,
+        });
+    },
+
+    _gen_img: function() {
+        if(this._player === null) {
+            return
+        }
+        var w = Game.SCREEN.w;
+        var h = Game.SCREEN.h;
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext("2d");
+
+        imgdata = ctx.createImageData(w,h);
+        px = Player.player.x + Crafty.viewport.x + (Player.player.w / 2);
+        py = Player.player.y + Crafty.viewport.y + (Player.player.h / 2);
+
+        for(var x=0; x<w; x++) {
+            for(var y=0; y<h; y++) {
+                var dist = Math.sqrt(
+                    Math.pow(px - x, 2) + Math.pow((py - y)*1.3, 2));
+                var alpha = Math.min(dist / 250, 0.9);
+
+                var i = (y*w+x) * 4;
+                imgdata.data[i+0] = 0;
+                imgdata.data[i+1] = 0;
+                imgdata.data[i+2] = 0;
+                imgdata.data[i+3] = alpha * 255;
+            }
+        }
+        ctx.putImageData(imgdata,0,0);
+
+        this.img = new Image();
+        this.img.src = canvas.toDataURL("image/png");
+        this.ready = true;
+        //document.body.appendChild(this.img);
+    },
+
+    _draw: function() {
+        if(this.img) {
+            ctx = Crafty.canvas.context;
+            ctx.drawImage(this.img, this.x, this.y);
+        }
+    },
+});
+
 
 Crafty.c('Player', {
     _timers: {iframes: 0, attack: 0},
@@ -35,8 +115,8 @@ Crafty.c('Player', {
             .requires('Persist, spr_player')
             .fourway(4)
             .attr({
-                x: 2200,
-                y: 8800,
+                x: 13900,
+                y: 4820,
                 z: 10,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})
@@ -278,6 +358,7 @@ Crafty.c('Fireball', {
 
 Player.init = function () {
     this.player = Crafty.e('Player');
+    //this.fog = Crafty.e('Fog').player(this.player);
 }
 
 })();
