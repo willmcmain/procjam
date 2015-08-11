@@ -9,10 +9,7 @@ Crafty.scene('Overworld', function (id) {
     }
     Crafty.viewport.follow(Player.player);
 
-
     //MiniMap.draw();
-    //Crafty.e('Skelly').spawn(300, 300);
-    //Crafty.e('Gobbo').spawn(950, 750);
 });
 
 

@@ -6,6 +6,7 @@ Map = {};
  ******************************************************************************/
 Map.Map = function(map, w, h) {
     var _Map = {
+        _binds: {},
         dungeon_id: null,
         map: map,
         entities: [],
@@ -30,14 +31,35 @@ Map.Map = function(map, w, h) {
                     this.exit.x, this.exit.y);
             }
 
+            // Load entities in the map
+            for(var i=0; i<this.entities.length; i++) {
+                var entity = this.entities[i];
+                Crafty.e(entity.type).unfreeze(entity);
+            }
+
             var that = this;
-            this._bind = Crafty.bind('InvalidateViewport', function() {
-                that.load_visible();
+            this._binds.viewport = Crafty.bind('InvalidateViewport',
+                function() {
+                    that.load_visible();
+                });
+            this._binds.unload = Crafty.bind('SceneDestroy', function() {
+                that.unload();
             });
+
         },
 
         unload: function() {
-            Crafty.unbind('InvalidateViewport', this._bind);
+            // Save Map entities
+            var that = this;
+            this.entities = [];
+            Crafty("MapEntity").each(function() {
+                var data = this.freeze();
+                console.log(data);
+                that.entities.push(data);
+            });
+
+            Crafty.unbind('InvalidateViewport', this._binds.viewport);
+            Crafty.unbind('SceneDestroy', this._binds.unload);
         },
 
         load_visible: function() {

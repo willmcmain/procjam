@@ -20,9 +20,12 @@ Crafty.c('Health', {
 });
 
 
+Crafty.c('MapEntity', {});
+
+
 Crafty.c('Enemy', {
     init: function() {
-        this.requires('Entity, Collision, Health');
+        this.requires('Entity, MapEntity, Collision, Health');
         this.attr({z: 10});
         this.health(20);
     },
@@ -59,6 +62,8 @@ Crafty.c('Skelly', {
                 this._timers.attack -= 1;
             }
         });
+
+        this.attr({w: 48, h: 55});
     },
 
     stop: function() {
@@ -123,6 +128,24 @@ Crafty.c('Skelly', {
             default:
                 break;
         }
+    },
+
+    freeze: function() {
+        return {
+            type: 'Skelly',
+            x: this.x,
+            y: this.y,
+            health: this._health,
+        };
+    },
+
+    unfreeze: function(data) {
+        this.x = data.x;
+        this.y = data.y;
+        if(data.health) {
+            this._health = data.health;
+        }
+        return this;
     },
 });
 

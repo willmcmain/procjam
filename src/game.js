@@ -14,14 +14,13 @@ Game = {
     start: function() {
         Noise.seed(this.SEED);
         Crafty.init(this.SCREEN.w, this.SCREEN.h);
-        this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT)
+        this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT);
+        this.overworld.entities.push(
+            {type: 'Skelly', x: 13300, y: 4300, health: null});
         Crafty.enterScene('Loading');
     },
 
     set_map: function(map) {
-        if(this.current) {
-            this.current.unload();
-        }
         this.current = map;
         this.current.load();
     },
