@@ -19,6 +19,24 @@ Overworld.generate = function(w, h) {
         }
     }
 
+    // Monsters
+    // Split world into 15x15 cells and generate monsters in each cell
+    for(var x=0; x<(w/30); x++) {
+        for(var y=0; y<(h/30); y++) {
+            var num = Poisson.poisson(1);
+            for(var i=0; i<num; i++) {
+                var cx = Noise.uniformint(0, 29);
+                var cy = Noise.uniformint(0, 29);
+                map.entities.push({
+                    type: 'Skelly',
+                    x: (x*30 + cx) * Game.TILE_WIDTH,
+                    y: (y*30 + cy) * Game.TILE_HEIGHT,
+                    health: null});
+            }
+        }
+    }
+
+
     return map;
 };
 

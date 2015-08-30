@@ -28,6 +28,26 @@ Crafty.c('Enemy', {
         this.requires('Entity, MapEntity, Collision, Health');
         this.attr({z: 10});
         this.health(20);
+
+        this.bind('InvalidateViewport', function () {
+            xmax = -Crafty.viewport._x + Crafty.viewport._width;
+            xmin = -Crafty.viewport._x - Game.TILE_WIDTH;
+            ymax = -Crafty.viewport._y + Crafty.viewport._height;
+            ymin = -Crafty.viewport._y - Game.TILE_HEIGHT;
+
+            if(this.x > xmax || this.x < xmin
+                || this.y > ymax || this.y < ymin) {
+                var i = Math.floor(this.x / Game.TILE_WIDTH);
+                var j = Math.floor(this.y / Game.TILE_HEIGHT);
+                this._owner.frozen_entities[i][j].push(this.freeze());
+                console.log("frozen: " + i + ", " + j);
+                this.destroy();
+            }
+        });
+    },
+
+    owner: function(map) {
+        this._owner = map;
     },
 });
 

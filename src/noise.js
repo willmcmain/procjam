@@ -1,6 +1,7 @@
 // Implementation of simplex noise adapted from
 // http://webstaff.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 var Noise = {};
+var Poisson = {};
 (function () {
 
 var grad3 = [
@@ -45,6 +46,10 @@ Noise.randint = function() {
         c = 12345,
         m = Math.pow(2, 32);
     return seed = (a * seed + c) % m;
+}
+
+Noise.random = function() {
+    return Noise.randint() / Math.pow(2, 32);
 }
 
 Noise.uniformint = function(a, b) {
@@ -115,5 +120,20 @@ Noise.simplex = function (x, y) {
 
     return 70.0 * (n0 + n1 + n2);
 }
+
+Poisson.next = function(lmb) {
+    return -Math.log(Noise.random()) / lmb;
+};
+
+Poisson.poisson = function(lmb) {
+    var L = Math.exp(-lmb);
+    var k = 1;
+    var p = Noise.random();
+    while(p > L) {
+        p *= Noise.random();
+        k++;
+    }
+    return k - 1;
+};
 
 })();

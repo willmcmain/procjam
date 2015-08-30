@@ -14,8 +14,11 @@ Map.Map = function(map, w, h) {
         exit: null,
         loaded: null,
         tileset: null,
+        frozen_entities: null,
 
         init: function(w, h) {
+            this.frozen_entities = Utils.array2d(w, h,
+                function() { return []; });
             return this;
         },
 
@@ -34,7 +37,7 @@ Map.Map = function(map, w, h) {
             // Load entities in the map
             for(var i=0; i<this.entities.length; i++) {
                 var entity = this.entities[i];
-                Crafty.e(entity.type).unfreeze(entity);
+                Crafty.e(entity.type).unfreeze(entity).owner(this);
             }
 
             var that = this;
@@ -79,6 +82,13 @@ Map.Map = function(map, w, h) {
                             .tile(this.map[x][y], x, y)
                             ;
                     }
+                    var ents = this.frozen_entities[x][y];
+                    for(var j=0; j<ents.length; j++) {
+                        console.log('unfrozen: ' + x + ', ' + y);
+                        var entity = ents[j];
+                        Crafty.e(entity.type).unfreeze(entity).owner(this);
+                    }
+                    this.frozen_entities[x][y] = [];
                 }
             }
         },

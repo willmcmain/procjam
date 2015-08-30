@@ -15,8 +15,8 @@ Game = {
         Noise.seed(this.SEED);
         Crafty.init(this.SCREEN.w, this.SCREEN.h);
         this.overworld = Overworld.generate(Game.MAP_WIDTH, Game.MAP_HEIGHT);
-        this.overworld.entities.push(
-            {type: 'Skelly', x: 13300, y: 4300, health: null});
+        //this.overworld.entities.push(
+        //    {type: 'Skelly', x: 13300, y: 4300, health: null});
         Crafty.enterScene('Loading');
     },
 
