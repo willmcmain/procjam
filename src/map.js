@@ -84,7 +84,6 @@ Map.Map = function(map, w, h) {
                     }
                     var ents = this.frozen_entities[x][y];
                     for(var j=0; j<ents.length; j++) {
-                        console.log('unfrozen: ' + x + ', ' + y);
                         var entity = ents[j];
                         Crafty.e(entity.type).unfreeze(entity).owner(this);
                     }
@@ -155,7 +154,6 @@ Crafty.c('Entrance', {
             //.requires('Canvas, WiredHitBox')
             ;
         this.onHit('Player', function() {
-            //console.log('Transition to dungeon #' + this.id);
             Crafty.enterScene('Dungeon', this.id);
         });
     },

@@ -40,7 +40,6 @@ Crafty.c('Enemy', {
                 var i = Math.floor(this.x / Game.TILE_WIDTH);
                 var j = Math.floor(this.y / Game.TILE_HEIGHT);
                 this._owner.frozen_entities[i][j].push(this.freeze());
-                console.log("frozen: " + i + ", " + j);
                 this.destroy();
             }
         });

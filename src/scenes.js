@@ -8,6 +8,15 @@ Crafty.scene('Overworld', function (id) {
         Player.player.attr(start);
     }
     Crafty.viewport.follow(Player.player);
+    Player.fog = Crafty.e('Fog')
+        .color(245, 255, 255)
+        .player(Player.player)
+        .level(Player.player.light_level());
+    Crafty.e('Torch').attr({x: 13900, y: 4920});
+    Crafty.e('Torch').attr({x: 13850, y: 4920});
+    Crafty.e('Torch').attr({x: 13800, y: 4920});
+    Crafty.e('Torch').attr({x: 13750, y: 4920});
+    Crafty.e('Torch').attr({x: 13700, y: 4920});
 
     //MiniMap.draw();
 });
@@ -26,7 +35,9 @@ Crafty.scene('Dungeon', function(id) {
     }
     Player.player.attr(start);
     Crafty.viewport.follow(Player.player);
-    Player.fog = Crafty.e('Fog').player(Player.player);
+    Player.fog = Crafty.e('Fog')
+        .player(Player.player)
+        .level(Player.player.light_level());
 });
 
 

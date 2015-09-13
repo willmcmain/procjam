@@ -1,5 +1,12 @@
 var Player = {};
 (function () {
+rgb = function(r, g, b, a) {
+    var data = {r: r, g: g, b: b, a: a}
+    if(typeof a === 'undefined') {
+        data.a = 255;
+    }
+    return data;
+};
 
 
 Crafty.c('Entity', {
@@ -8,6 +15,25 @@ Crafty.c('Entity', {
             //.requires('WiredHitBox')
             ;
     }
+});
+
+
+Crafty.c('Torch', {
+    init: function() {
+        this.requires('2D, Canvas, Collision, spr_torch')
+            .requires('WiredHitBox')
+            .attr({
+                z: 11,
+                w: 24,
+                h: 48,
+            });
+        this.onHit('Player', function(cols) {
+            console.log(cols);
+            var player = cols[0].obj;
+            player.inc_light_level();
+            this.destroy();
+        });
+    },
 });
 
 
@@ -33,6 +59,8 @@ var comb = function(sval, sal, dval, dal) {
 Crafty.c('Fog', {
     img: null,
     _player: null,
+    _color: rgb(0, 0, 0),
+    _level: 0,
     ready: false,
     init: function() {
         this.requires('2D, Canvas');
@@ -44,12 +72,31 @@ Crafty.c('Fog', {
             h: Game.SCREEN.h,
         });
         this.bind('Draw', this._draw);
-        this.bind('Remove', function() { console.log('remove fog') });
+        //this.bind('Remove', function() { console.log('remove fog') });
         this.bind('InvalidateViewport', this._center);
+    },
+
+    color: function(r, g, b, a) {
+        if(typeof a === 'undefined') {
+            a = 255;
+        }
+        this._color = rgb(r, g, b, a);
+        if(this._player !== null) {
+            this._gen_img();
+            this._center();
+        }
+        return this;
     },
 
     player: function(p) {
         this._player = p;
+        this._gen_img();
+        this._center();
+        return this;
+    },
+
+    level: function(l) {
+        this._level = l;
         this._gen_img();
         this._center();
         return this;
@@ -66,6 +113,14 @@ Crafty.c('Fog', {
         if(this._player === null) {
             return
         }
+        var radius = 200 + (this._level * 75);
+        var alpha_max = 1.0 - (this._level * 0.05);
+        var alpha_min = 0.25 - (this._level * 0.05);
+        if(this._level >= 5) {
+            alpha_max = 0.55;
+        }
+        console.log('a ' + alpha_min + ' - ' + alpha_max);
+
         var w = Game.SCREEN.w;
         var h = Game.SCREEN.h;
         var canvas = document.createElement("canvas");
@@ -81,13 +136,14 @@ Crafty.c('Fog', {
             for(var y=0; y<h; y++) {
                 var dist = Math.sqrt(
                     Math.pow(px - x, 2) + Math.pow((py - y)*1.3, 2));
-                var alpha = Math.min(dist / 250, 0.9);
+                var alpha = Math.max(
+                    Math.min(dist / radius, alpha_max), alpha_min);
 
                 var i = (y*w+x) * 4;
-                imgdata.data[i+0] = 0;
-                imgdata.data[i+1] = 0;
-                imgdata.data[i+2] = 0;
-                imgdata.data[i+3] = alpha * 255;
+                imgdata.data[i+0] = this._color.r;
+                imgdata.data[i+1] = this._color.g;
+                imgdata.data[i+2] = this._color.b;
+                imgdata.data[i+3] = alpha * this._color.a;
             }
         }
         ctx.putImageData(imgdata,0,0);
@@ -108,6 +164,7 @@ Crafty.c('Fog', {
 
 
 Crafty.c('Player', {
+    _lights: 0,
     _timers: {iframes: 0, attack: 0},
     dir: 'down',
     init: function() {
@@ -224,6 +281,16 @@ Crafty.c('Player', {
                 .owner(this);
             this._timers.attack = 30;
         }
+    },
+
+    light_level: function() {
+        return this._lights;
+    },
+
+    inc_light_level: function() {
+        this._lights += 1;
+        Player.fog.level(this._lights);
+        Player.fog._draw();
     },
 });
 
@@ -358,7 +425,6 @@ Crafty.c('Fireball', {
 
 Player.init = function () {
     this.player = Crafty.e('Player');
-    //this.fog = Crafty.e('Fog').player(this.player);
 }
 
 })();

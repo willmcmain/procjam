@@ -56,6 +56,13 @@ Game = {
                     "spr_fireball": [0, 0],
                 },
             },
+            "assets/torch.png": {
+                "tile": 38,
+                "tileh": 64,
+                "map": {
+                    "spr_torch": [0, 0],
+                },
+            },
             "assets/tiles.png": {
                 "tile": 48,
                 "tileh": 48,
