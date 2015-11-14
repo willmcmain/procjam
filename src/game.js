@@ -26,12 +26,24 @@ Game = {
     },
 
     assets: {
+        /*"audio": {
+            "overworld": 'assets/overworld.mp3',
+            "dungeon": 'assets/dungeon.wav',
+        },*/
+        //"images": ["assets/gameover.png"],
         "sprites": {
             "assets/player.png": {
                 "tile": 64,
                 "tileh": 72,
                 "map": {
                     "spr_player": [0, 2],
+                },
+            },
+            "assets/playercorpse.png": {
+                "tile": 48,
+                "tileh": 48,
+                "map": {
+                    "spr_player_corpse": [0, 0],
                 },
             },
             "assets/enemies.png": {
@@ -75,6 +87,14 @@ Game = {
                     "tile_rock":  [1, 1],
                     "tile_floor": [2, 1],
                     "tile_stairs":[3, 1],
+                },
+            },
+            "assets/heart.png": {
+                "tile": 32,
+                "tileh": 32,
+                "map": {
+                    "spr_heart": [0, 0],
+                    "spr_emptyheart": [1, 0],
                 },
             },
         },

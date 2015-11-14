@@ -18,17 +18,61 @@ Crafty.c('Entity', {
 });
 
 
+Crafty.c('BaseHeart', {
+    _pos: {x: 0, y: 0},
+    init: function() {
+        this.requires('2D, Canvas, Persist')
+            .attr({
+                w: 32,
+                h: 32,
+                z: 30
+            });
+        this.scrnpos(0, 0);
+
+        this.bind('InvalidateViewport', function() {
+            this._setxy();
+        });
+    },
+
+    scrnpos: function(x, y) {
+        this._pos = {};
+        this._pos.x = x;
+        this._pos.y = y;
+        this._setxy();
+        return this;
+    },
+
+    _setxy: function() {
+        this.x = this._pos.x - Crafty.viewport.x;
+        this.y = this._pos.y - Crafty.viewport.y;
+    },
+});
+
+
+Crafty.c('Heart', {
+    init: function() {
+        this.requires('BaseHeart, Persist, spr_heart');
+    },
+});
+
+
+Crafty.c('EmptyHeart', {
+    init: function() {
+        this.requires('BaseHeart, spr_emptyheart');
+    },
+});
+
+
 Crafty.c('Torch', {
     init: function() {
         this.requires('2D, Canvas, Collision, spr_torch')
-            .requires('WiredHitBox')
+            //.requires('WiredHitBox')
             .attr({
                 z: 11,
                 w: 24,
                 h: 48,
             });
         this.onHit('Player', function(cols) {
-            console.log(cols);
             var player = cols[0].obj;
             player.inc_light_level();
             this.destroy();
@@ -119,7 +163,6 @@ Crafty.c('Fog', {
         if(this._level >= 5) {
             alpha_max = 0.55;
         }
-        console.log('a ' + alpha_min + ' - ' + alpha_max);
 
         var w = Game.SCREEN.w;
         var h = Game.SCREEN.h;
@@ -163,6 +206,21 @@ Crafty.c('Fog', {
 });
 
 
+Crafty.c('GameOver', {
+    init: function() {
+        this.requires('2D, Canvas, Image')
+            .image('assets/gameover.png')
+            .attr({x: -Crafty.viewport.x, y: -Crafty.viewport.y, z: 100});
+        this.alpha = 0;
+        this.bind("EnterFrame", function() {
+            if(this.alpha < 1) {
+                this.alpha += 0.01;
+            }
+        });
+    },
+});
+
+
 Crafty.c('Player', {
     _lights: 0,
     _timers: {iframes: 0, attack: 0},
@@ -183,7 +241,7 @@ Crafty.c('Player', {
             .reel('PlayerRight', 600, 0, 1, 1)
             .reel('PlayerDown',  600, 0, 2, 1)
             .reel('PlayerLeft',  600, 0, 3, 1)
-            .health(100)
+            .health(40)
             ;
 
         this.onHit('Enemy', function() {
@@ -194,8 +252,16 @@ Crafty.c('Player', {
         this.damage = function(d) {
             if(this._timers.iframes == 0) {
                 this._health -= d;
-                console.log("HP: " + this._health);
+                //console.log("HP: " + this._health);
+                Player.health.hit();
                 if(this._health <= 0) {
+                    Crafty.e('2D, Canvas, spr_player_corpse').attr({
+                        x: this.x,
+                        y: this.y,
+                        w: 64,
+                        h: 64,
+                        z: 10,
+                    });
                     this.destroy();
                 }
                 this._timers.iframes = 50;
@@ -244,6 +310,10 @@ Crafty.c('Player', {
             if(this._timers['attack'] > 0) {
                 this._timers['attack'] -= 1;
             }
+        });
+
+        this.bind('Remove', function() {
+            Crafty.e("GameOver");
         });
     },
 
@@ -423,8 +493,31 @@ Crafty.c('Fireball', {
 });
 
 
+Player.health = {
+    total: 10,
+    width: 35,
+    hearts: [],
+    init: function(player) {
+        this.total = player._health / 10;
+        for(var i=0; i<this.total; i++) {
+            this.hearts.push(Crafty.e('Heart').scrnpos(this.width*i, 0));
+        }
+    },
+
+    hit: function() {
+        if(this.total) {
+            this.total -= 1;
+            var old = this.hearts[this.total];
+            this.hearts[this.total] = Crafty.e('EmptyHeart')
+                .scrnpos(this.width * (this.total), 0);
+            old.destroy();
+        }
+    },
+}
+
 Player.init = function () {
     this.player = Crafty.e('Player');
+    this.health.init(this.player);
 }
 
 })();
