@@ -44,7 +44,7 @@ var seed = 15485863;
 Noise.randint = function() {
     var a = 1103515245,
         c = 12345,
-        m = Math.pow(2, 32);
+        m = Math.pow(2, 32) - 1;
     return seed = (a * seed + c) % m;
 }
 
@@ -55,6 +55,20 @@ Noise.random = function() {
 Noise.uniformint = function(a, b) {
     var val = this.randint() % (b-a+1);
     return val + a
+}
+
+Noise.test = function(n) {
+    var zero = 0,
+        one  = 0;
+    for(var i=0; i < n; i++) {
+        if(Noise.uniformint(0, 1)) {
+            one++;
+        }
+        else {
+            zero++;
+        }
+    }
+    console.log('Zeroes: ' + zero + '; Ones: ' + one);
 }
 
 Noise.simplex = function (x, y) {
