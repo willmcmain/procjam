@@ -52,6 +52,12 @@ Noise.random = function() {
     return Noise.randint() / Math.pow(2, 32);
 }
 
+Noise.randomchoice = function(arr) {
+    var len = arr.length;
+    var i = Noise.uniformint(0, len-1);
+    return arr[i];
+}
+
 Noise.uniformint = function(a, b) {
     var val = this.randint() % (b-a+1);
     return val + a
@@ -121,9 +127,11 @@ Noise.simplex = function (x, y) {
     return 70.0 * (n0 + n1 + n2);
 }
 
+
 Poisson.next = function(lmb) {
     return -Math.log(Noise.random()) / lmb;
 };
+
 
 Poisson.poisson = function(lmb) {
     var L = Math.exp(-lmb);

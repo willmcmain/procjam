@@ -23,12 +23,15 @@ Overworld.generate = function(w, h) {
     // Split world into 15x15 cells and generate monsters in each cell
     for(var x=0; x<(w/30); x++) {
         for(var y=0; y<(h/30); y++) {
-            var num = Poisson.poisson(1);
+            var num = Noise.random() < 0.7 ? Poisson.poisson(2) : 0;
+            var type = Noise.randomchoice(['Skelly', 'Gobbo']);
+            console.log(type);
+
             for(var i=0; i<num; i++) {
-                var cx = Noise.uniformint(0, 29);
-                var cy = Noise.uniformint(0, 29);
+                var cx = Noise.uniformint(0, 9);
+                var cy = Noise.uniformint(0, 9);
                 map.entities.push({
-                    type: 'Skelly',
+                    type: type,
                     x: (x*30 + cx) * Game.TILE_WIDTH,
                     y: (y*30 + cy) * Game.TILE_HEIGHT,
                     health: null});

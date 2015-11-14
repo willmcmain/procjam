@@ -250,4 +250,22 @@ Crafty.c('Gobbo', {
                 break;
         }
     },
+
+    freeze: function() {
+        return {
+            type: 'Gobbo',
+            x: this.x,
+            y: this.y,
+            health: this._health,
+        };
+    },
+
+    unfreeze: function(data) {
+        this.x = data.x;
+        this.y = data.y;
+        if(data.health) {
+            this._health = data.health;
+        }
+        return this;
+    },
 });
