@@ -1,18 +1,24 @@
 Crafty.scene('Overworld', function (id) {
     Game.set_map(Game.overworld);
-    if(id !== undefined) {
-        var start = {
-            x: Game.overworld.entrances[id].x * Game.TILE_WIDTH,
-            y: (Game.overworld.entrances[id].y+1) * Game.TILE_HEIGHT,
-        }
-        Player.player.attr(start);
+    //var start = {x: 1200, y: 1200};
+    if(id == undefined) {
+        id = Noise.uniformint(0, 4);
     }
+    var start = {
+        x: Game.overworld.entrances[id].x * Game.TILE_WIDTH,
+        y: (Game.overworld.entrances[id].y+1) * Game.TILE_HEIGHT,
+    }
+    Player.player.attr(start);
     Crafty.viewport.follow(Player.player);
     Player.fog = Crafty.e('Fog')
         .color(245, 255, 255)
         .player(Player.player)
         .level(Player.player.light_level());
-    Crafty.e('Torch').attr({x: 13900, y: 4920});
+    /*Crafty.e('Torch').attr({x: 13900, y: 4920});
+    Crafty.e('Torch').attr({x: 13850, y: 4920});
+    Crafty.e('Torch').attr({x: 13800, y: 4920});
+    Crafty.e('Torch').attr({x: 13750, y: 4920});
+    Crafty.e('Torch').attr({x: 13700, y: 4920});*/
 
     //MiniMap.draw();
     //Crafty.audio.stop();

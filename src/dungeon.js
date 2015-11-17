@@ -6,6 +6,8 @@ Dungeon.generate = function(w, h) {
     d.generate();
     var map = Map.Map(d.map, w, h);
     map.exit = d.exit;
+    map.entities = d.entities;
+    console.log(map.entities);
     return map;
 };
 
@@ -95,6 +97,7 @@ Dungeon._Dungeon = {
     rooms: null,
     tunnels: null,
     exit: null,
+    entities: [],
 
     init: function(w, h) {
         this.w = w;
@@ -107,6 +110,7 @@ Dungeon._Dungeon = {
         this.gen_rooms();
         this.gen_tunnels();
         this.gen_map();
+        this.gen_monsters();
     },
 
     gen_map: function() {
@@ -216,6 +220,25 @@ Dungeon._Dungeon = {
                 }
             }
             nodes = next_nodes;
+        }
+    },
+
+    gen_monsters: function() {
+        for(var i = 0; i < this.rooms.length; i++) {
+            var room = this.rooms[i];
+            var cx = room.x + room.w / 2;
+            var cy = room.y + room.h / 2;
+            var num = Poisson.poisson(3);
+            console.log(num);
+            for (var n = 0; n < num; n++) {
+                var dat = {
+                    type: 'Gobbo',
+                    x: cx + Noise.uniformint(-30, 30),
+                    y: cy + Noise.uniformint(-30, 30),
+                    health: null
+                };
+                this.entities.push(dat);
+            }
         }
     },
 };

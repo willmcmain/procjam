@@ -21,17 +21,25 @@ Overworld.generate = function(w, h) {
 
     // Monsters
     // Split world into 15x15 cells and generate monsters in each cell
-    for(var x=0; x<(w/30); x++) {
-        for(var y=0; y<(h/30); y++) {
-            var num = Poisson.poisson(1);
+    var CELLW = 15;
+    var CELLH = 15;
+    for(var x=0; x<(w/CELLW); x++) {
+        for(var y=0; y<(h/CELLH); y++) {
+            var num = Poisson.poisson(3);
             for(var i=0; i<num; i++) {
-                var cx = Noise.uniformint(0, 29);
-                var cy = Noise.uniformint(0, 29);
-                map.entities.push({
-                    type: 'Skelly',
-                    x: (x*30 + cx) * Game.TILE_WIDTH,
-                    y: (y*30 + cy) * Game.TILE_HEIGHT,
-                    health: null});
+                var cx = Utils.clamp(x * CELLW + Noise.uniformint(0, 7),
+                    0, Game.MAP_WIDTH-1);
+                var cy = Utils.clamp(y * CELLH + Noise.uniformint(0, 7),
+                    0, Game.MAP_HEIGHT-1);
+                if(gmap[cx][cy] == 'grass') {
+                    var dat = {
+                        type: 'Skelly',
+                        x: cx * Game.TILE_WIDTH,
+                        y: cy * Game.TILE_HEIGHT,
+                        health: null
+                    };
+                    map.entities.push(dat);
+                }
             }
         }
     }
@@ -65,6 +73,11 @@ var gen_terrain = function(map) {
             if(Noise.simplex((x+100)/77, (y+300)/75) > 0.4) {
                 map[x][y] = 'water';
             }
+
+            // Put trees around the borders
+            if(x == 0 || y == 0 || x == map.length-1 || y == map[x].length-1) {
+                map[x][y] = 'tree';
+            }
         }
     }
     return map;
@@ -72,17 +85,18 @@ var gen_terrain = function(map) {
 
 
 var gen_dungeon_entrances = function(map) {
-    var n = 3;
+    var n = 5;
     var entrances = [];
     while(entrances.length < n) {
         var w = map.length
           , h = map[0].length
-          , dot = Noise.uniformint(0, w*h)
+          , dot = Noise.uniformint(2, w*h-2)
           , y = Math.floor(dot/w)
           , x = dot - (y * w);
         if(!(map[x][y] == 'water' || map[x][y] == 'tree') ) {
             entrances.push([x,y]);
             map[x][y] = 'stairs';
+            map[x][y+1] = 'grass';
         }
     }
     return map;
