@@ -76,6 +76,10 @@ Crafty.c('Torch', {
             var player = cols[0].obj;
             player.inc_light_level();
             this.destroy();
+            if(player.light_level() >= 5) {
+                player.lock();
+                Crafty.e('Win');
+            };
         });
     },
 });
@@ -221,6 +225,21 @@ Crafty.c('GameOver', {
 });
 
 
+Crafty.c('Win', {
+    init: function() {
+        this.requires('2D, Canvas, Image')
+            .image('assets/winscreen.png')
+            .attr({x: -Crafty.viewport.x, y: -Crafty.viewport.y, z: 100});
+        this.alpha = 0;
+        this.bind("EnterFrame", function() {
+            if(this.alpha < 1) {
+                this.alpha += 0.01;
+            }
+        });
+    },
+});
+
+
 Crafty.c('Player', {
     _lights: 0,
     _timers: {iframes: 0, attack: 0},
@@ -230,8 +249,8 @@ Crafty.c('Player', {
             .requires('Persist, spr_player')
             .fourway(4)
             .attr({
-                x: 13900,
-                y: 4820,
+                //x: 13900,
+                //y: 4820,
                 z: 10,
                 w: Game.PLAYER_WIDTH,
                 h: Game.PLAYER_HEIGHT})
@@ -361,6 +380,12 @@ Crafty.c('Player', {
         this._lights += 1;
         Player.fog.level(this._lights);
         Player.fog._draw();
+    },
+
+    lock: function() {
+        this.unbind('KeyDown');
+        this.fourway(0);
+        this.stop();
     },
 });
 

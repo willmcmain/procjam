@@ -57,7 +57,7 @@ Map.Map = function(map, w, h) {
             this.entities = [];
             Crafty("MapEntity").each(function() {
                 var data = this.freeze();
-                console.log(data);
+                //console.log(data);
                 that.entities.push(data);
             });
 

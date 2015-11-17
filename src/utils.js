@@ -20,4 +20,8 @@ Utils.array2d = function(w, h, def) {
     return array;
 };
 
+Utils.clamp = function(x, a, b) {
+    return Math.max(a, Math.min(b, x));
+};
+
 })();
